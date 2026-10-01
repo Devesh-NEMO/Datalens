@@ -1,0 +1,194 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-page: #0E0E10;
+  --color-text: #ECE9E2;
+  --color-muted-text: #8B877E;
+  --color-rule: #2A2926;
+  --color-class-a: #7EE0B0;
+  --color-class-b: #F2C66B;
+  --color-class-c: #F08A7E;
+  --color-accent: #ECE9E2;
+
+  /* Type scale. Editorial: one serif family for display + numbers,
+     system sans for everything the user operates. */
+  --font-serif: Georgia, 'Times New Roman', Times, serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --text-hero: clamp(2.25rem, 6.5vw, 5.25rem);
+  --text-chapter: clamp(1.5rem, 3.5vw, 2.375rem);
+  --text-stat: clamp(2rem, 5vw, 4rem);
+
+  --tracking-display: -0.03em;
+  --tracking-label: 0.15em;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  /* Light theme is applied by a class on <html>, set before first paint by the
+     inline script in layout.tsx. Defaults below are the dark (default) theme. */
+  .light {
+    color-scheme: light;
+    --color-page: #F7F4EC;
+    --color-text: #1A1916;
+    --color-muted-text: #6B675E;
+    --color-rule: #DCD7CA;
+    --color-class-a: #2E9E6E;
+    --color-class-b: #B98A1E;
+    --color-class-c: #C4584B;
+    --color-accent: #1A1916;
+  }
+
+  * {
+    border-color: var(--color-rule);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-text);
+    margin: 0;
+    min-height: 100vh;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Display type: the giant finding, chapter headings, big numbers. */
+  .font-serif {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    letter-spacing: var(--tracking-display);
+  }
+
+  .text-hero {
+    font-size: var(--text-hero);
+  }
+
+  .text-chapter {
+    font-size: var(--text-chapter);
+  }
+
+  .text-stat {
+    font-size: var(--text-stat);
+  }
+
+  /* Small uppercase eyebrow labels: chapter numbers, field labels. */
+  .label-xs {
+    display: inline-block;
+    font-size: 12px;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--color-muted-text);
+  }
+
+  /* Controls never exceed a 6px radius and never drop a shadow. */
+  .control {
+    border-radius: 6px;
+    box-shadow: none;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+/* Recharts: transparent backgrounds, hairline gridlines, no drop shadows. */
+.recharts-wrapper {
+  font-family: inherit;
+}
+
+.recharts-surface {
+  overflow: visible;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--color-rule);
+}
+
+.recharts-xaxis-tick text,
+.recharts-yaxis-tick text {
+  fill: var(--color-muted-text);
+  font-size: 11px;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.recharts-default-tooltip {
+  background-color: var(--color-page) !important;
+  border: 1px solid var(--color-rule) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+.recharts-default-tooltip .recharts-tooltip-label {
+  color: var(--color-text) !important;
+  font-weight: 600 !important;
+}
+
+.recharts-default-tooltip .recharts-tooltip-item-value {
+  color: var(--color-accent) !important;
+}
+
+.recharts-legend-item-text {
+  color: var(--color-text) !important;
+}
+
+.recharts-reference-line-line {
+  stroke: var(--color-rule) !important;
+  stroke-dasharray: 4 4 !important;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-page);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-rule);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-text);
+}
