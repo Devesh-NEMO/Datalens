@@ -1,25 +1,30 @@
 # Python
+#
+# Directory patterns are anchored with a leading slash so they only match at the
+# repository root. Unanchored, `lib/` also matched frontend/src/lib/ at any
+# depth and silently hid every module the frontend imports — including api.ts
+# and constants.ts — which left the committed app unable to build.
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
-venv/
-.venv/
-ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+/env/
+/venv/
+/.venv/
+/ENV/
+/build/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -43,3 +48,10 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Node / Next.js
+node_modules/
+.next/
+coverage/
+.env.*
+!.env.example

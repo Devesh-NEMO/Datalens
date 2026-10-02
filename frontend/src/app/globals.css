@@ -18,7 +18,18 @@
 
   --text-hero: clamp(2.25rem, 6.5vw, 5.25rem);
   --text-chapter: clamp(1.5rem, 3.5vw, 2.375rem);
-  --text-stat: clamp(2rem, 5vw, 4rem);
+
+  /* Key-figure size, in container units rather than vw.
+
+     The figure sits in a grid column inside a story column capped at 760px, so
+     the tile's width is decided by the container, not the viewport. Sizing in vw
+     let the two disagree: at a narrow column the 4rem number overflowed its own
+     tile. 18cqw tracks the tile, so the number always fits beside it.
+
+     Requires an ancestor with container-type: inline-size (Tailwind's
+     `@container`). Without one, cqw falls back to the small viewport, which
+     still degrades to a sensible clamped size rather than breaking. */
+  --text-stat: clamp(1.25rem, 18cqw, 4rem);
 
   --tracking-display: -0.03em;
   --tracking-label: 0.15em;

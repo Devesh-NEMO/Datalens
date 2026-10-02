@@ -7,6 +7,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import realResponse from '../__fixtures__/analyze_sales_clean.json';
 import type { AnalysisResponse } from '@/lib/api';
+import { DEFAULT_METRIC_IDS } from '@/lib/metrics';
 
 // Recharts needs these in jsdom
 vi.mock('recharts', async () => {
@@ -27,9 +28,16 @@ import { TrendChart } from '@/components/charts/TrendChart';
 
 const data = realResponse as unknown as AnalysisResponse;
 
+// The KPI row is controlled by the page, which owns the selection. These tests
+// exercise the headline, so they pass the defaults and ignore changes.
+const metricProps = {
+  metricSelection: DEFAULT_METRIC_IDS,
+  onMetricSelectionChange: () => {},
+};
+
 describe('Dashboard story renders from a real /analyze response', () => {
   it('renders the hero with the backend Pareto summary as the h1', () => {
-    const { container } = render(<Hero data={data} />);
+    const { container } = render(<Hero data={data} {...metricProps} />);
     const heading = container.querySelector('h1');
     expect(heading).toBeInTheDocument();
     // The summary text is preserved verbatim even though percentages are
@@ -38,7 +46,7 @@ describe('Dashboard story renders from a real /analyze response', () => {
   });
 
   it('highlights the percentages in the Pareto summary', () => {
-    const { container } = render(<Hero data={data} />);
+    const { container } = render(<Hero data={data} {...metricProps} />);
     const highlighted = Array.from(
       container.querySelectorAll('h1 span')
     ).filter((s) => s.className.includes('color-class-a'));

@@ -1,8 +1,9 @@
 'use client';
 
-import { StatNumber } from '@/components/ui';
 import type { AnalysisResponse } from '@/lib/api';
-import { formatNumber } from '@/lib/format';
+import { ExecutiveSummary } from '@/components/dashboard/ExecutiveSummary';
+import { KpiRow } from '@/components/dashboard/KpiRow';
+import type { MetricId } from '@/lib/metrics';
 
 /**
  * The backend's Pareto summary is the headline. Percentages inside it are
@@ -26,12 +27,15 @@ function HighlightedParetoSummary({ summary }: { summary: string }) {
   );
 }
 
-export function Hero({ data }: { data: AnalysisResponse }) {
-  const { ranking, meta, quality } = data;
-  const { abc_summary: abc } = ranking;
+interface HeroProps {
+  data: AnalysisResponse;
+  /** Which figures the KPI row shows, and how to change that selection. */
+  metricSelection: readonly MetricId[];
+  onMetricSelectionChange: (next: MetricId[]) => void;
+}
 
-  const qualityTone =
-    quality.score >= 90 ? 'positive' : quality.score >= 50 ? 'neutral' : 'negative';
+export function Hero({ data, metricSelection, onMetricSelectionChange }: HeroProps) {
+  const { ranking } = data;
 
   return (
     <div className="space-y-8">
@@ -40,23 +44,16 @@ export function Hero({ data }: { data: AnalysisResponse }) {
         <h1 className="font-serif text-hero leading-[1.05] text-[var(--color-text)]">
           <HighlightedParetoSummary summary={ranking.pareto_summary} />
         </h1>
-        <p className="text-lg text-[var(--color-muted-text)]">
-          {abc.class_a_count} {abc.class_a_count === 1 ? 'product' : 'products'} in Class A,{' '}
-          {abc.class_b_count} in Class B, and {abc.class_c_count} in Class C
-        </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
-        <StatNumber value={formatNumber(meta.rows)} label="Rows" />
-        <StatNumber value={formatNumber(meta.columns)} label="Columns" />
-        <StatNumber value={formatNumber(ranking.total_value)} label="Total value" />
-        <StatNumber
-          value={quality.score.toFixed(0)}
-          label="Quality score"
-          status={quality.status}
-          statusTone={qualityTone}
-        />
-      </div>
+      {/* Replaces the old one-line class-count sentence: the same facts, scannable. */}
+      <ExecutiveSummary data={data} />
+
+      <KpiRow
+        data={data}
+        selected={metricSelection}
+        onSelectedChange={onMetricSelectionChange}
+      />
     </div>
   );
 }

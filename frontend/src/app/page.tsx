@@ -7,6 +7,7 @@ import { ThemeProvider, useTheme } from "@/hooks/useTheme";
 import { useAnalyze } from "@/hooks/useAnalyze";
 import { Button, EmptyState, Spinner, ErrorBanner, Chapter } from "@/components/ui";
 import { TOP_N_OPTIONS } from "@/lib/constants";
+import { DEFAULT_METRIC_IDS, type MetricId } from "@/lib/metrics";
 import type { ReportSettings } from "@/lib/report/reportSections";
 import {
   Hero,
@@ -29,18 +30,26 @@ function Dashboard({
   onReanalyze,
   isLoading,
   reportSettings,
+  metricSelection,
+  onMetricSelectionChange,
 }: {
   data: AnalysisResponse;
   fileName: string;
   onReanalyze: (options: AnalyzeOptions) => void;
   isLoading: boolean;
   reportSettings: ReportSettings;
+  metricSelection: readonly MetricId[];
+  onMetricSelectionChange: (next: MetricId[]) => void;
 }) {
   const hasTrend = data.charts.monthly_trend && data.charts.monthly_trend.length > 0;
 
   return (
     <div className="space-y-12">
-      <Hero data={data} />
+      <Hero
+        data={data}
+        metricSelection={metricSelection}
+        onMetricSelectionChange={onMetricSelectionChange}
+      />
       <QualityPanel data={data} />
       <ColumnSelector data={data} onReanalyze={onReanalyze} isLoading={isLoading} />
 
@@ -96,6 +105,47 @@ function AppContent() {
   const { data, error, isLoading, analyze, reset } = useAnalyze();
   const [file, setFile] = useState<File | null>(null);
 
+  // Which figures the KPI row shows. Lives here rather than inside KpiRow so
+  // the selection survives the row unmounting during a re-analysis, and so step
+  // (h) can mirror it into the URL from one place.
+  const [metricSelection, setMetricSelection] = useState<MetricId[]>([
+    ...DEFAULT_METRIC_IDS,
+  ]);
+
+  // A new file starts from the default figures again: a selection made for one
+  // dataset says nothing about the next one, and a metric the new file cannot
+  // produce is dropped by resolveMetricSelection anyway.
+  const handleFileSelect = useCallback(
+    (f: File) => {
+      setFile(f);
+      setMetricSelection([...DEFAULT_METRIC_IDS]);
+      analyze(f);
+    },
+    [analyze]
+  );
+
+  const handleSampleSelect = useCallback(
+    async (type: "clean" | "messy") => {
+      try {
+        const res = await fetch(`/samples/sales_${type}.csv`);
+        const blob = await res.blob();
+        const f = new File([blob], `sales_${type}.csv`, { type: "text/csv" });
+        setFile(f);
+        setMetricSelection([...DEFAULT_METRIC_IDS]);
+        analyze(f);
+      } catch {
+        // Handle error
+      }
+    },
+    [analyze]
+  );
+
+  const handleReset = useCallback(() => {
+    setFile(null);
+    setMetricSelection([...DEFAULT_METRIC_IDS]);
+    reset();
+  }, [reset]);
+
   // Columns chosen for this analysis, echoed on the report cover. Read from the
   // response so a re-analysis with different columns is reflected.
   const reportSettings = useMemo<ReportSettings>(
@@ -114,34 +164,6 @@ function AppContent() {
     }),
     [data]
   );
-
-  const handleFileSelect = useCallback(
-    (f: File) => {
-      setFile(f);
-      analyze(f);
-    },
-    [analyze]
-  );
-
-  const handleSampleSelect = useCallback(
-    async (type: "clean" | "messy") => {
-      try {
-        const res = await fetch(`/samples/sales_${type}.csv`);
-        const blob = await res.blob();
-        const f = new File([blob], `sales_${type}.csv`, { type: "text/csv" });
-        setFile(f);
-        analyze(f);
-      } catch {
-        // Handle error
-      }
-    },
-    [analyze]
-  );
-
-  const handleReset = useCallback(() => {
-    setFile(null);
-    reset();
-  }, [reset]);
 
   const handleReanalyze = useCallback(
     (options: AnalyzeOptions) => {
@@ -221,6 +243,8 @@ function AppContent() {
               onReanalyze={handleReanalyze}
               isLoading={isLoading}
               reportSettings={reportSettings}
+              metricSelection={metricSelection}
+              onMetricSelectionChange={setMetricSelection}
             />
           )}
         </div>
