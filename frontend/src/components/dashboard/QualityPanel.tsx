@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Chapter } from '@/components/ui';
 import type { AnalysisResponse } from '@/lib/api';
+import { CHAPTER_IDS, CHAPTER_TITLES } from '@/lib/constants';
 import { formatNumber } from '@/lib/format';
 
 interface QualityPanelProps {
@@ -51,7 +52,7 @@ export function QualityPanel({ data }: QualityPanelProps) {
   const visibleWarnings = (warnings ?? []).filter((w) => !dismissed.includes(w));
 
   return (
-    <Chapter number={1} title="Your data">
+    <Chapter number={1} id={CHAPTER_IDS.quality} title={CHAPTER_TITLES[CHAPTER_IDS.quality]}>
       <div className="space-y-8">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Stat label="Missing cells" value={formatNumber(quality.total_missing_cells)} />

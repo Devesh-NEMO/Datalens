@@ -383,6 +383,97 @@ export const DOWNLOAD_COPY = {
 } as const;
 
 /* -------------------------------------------------------------------------- */
+/* Chapters                                                                   */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Stable anchor ids for the eight chapters.
+ *
+ * These appear in the DOM and are the targets the insight list, the sticky
+ * chapter nav and the skip links all jump to, so they must not change when a
+ * chapter is renumbered or reworded. Keys are semantic, not positional, so
+ * inserting a chapter does not renumber the rest.
+ */
+export const CHAPTER_IDS = {
+  /** 1. Your data — quality, cleaning, warnings. */
+  quality: 'chapter-quality',
+  /** 2. Settings — the columns used for this analysis. */
+  settings: 'chapter-settings',
+  /** 3. The shape — the Pareto curve. */
+  shape: 'chapter-shape',
+  /** 4. The leaders — top products and the most important list. */
+  leaders: 'chapter-leaders',
+  /** 5. The split — the ABC classes. */
+  split: 'chapter-split',
+  /** 6. The long tail — least important products and the value distribution. */
+  tail: 'chapter-tail',
+  /** 7. Over time — the monthly trend. Only present when the file has dates. */
+  time: 'chapter-time',
+  /** 8. The data — the full ranking table. */
+  ranking: 'chapter-ranking',
+} as const;
+
+export type ChapterId = (typeof CHAPTER_IDS)[keyof typeof CHAPTER_IDS];
+
+/**
+ * Chapter headings, keyed by anchor id.
+ *
+ * Held here rather than at each call site because two places need the same
+ * string: the chapter renders it, and the insight list names it in the
+ * off-screen part of each link. Deriving both from one record is what stops a
+ * rename from leaving the links pointing at a heading that no longer exists.
+ */
+export const CHAPTER_TITLES = {
+  [CHAPTER_IDS.quality]: 'Your data',
+  [CHAPTER_IDS.settings]: 'Settings',
+  [CHAPTER_IDS.shape]: 'The shape',
+  [CHAPTER_IDS.leaders]: 'The leaders',
+  [CHAPTER_IDS.split]: 'The split',
+  [CHAPTER_IDS.tail]: 'The long tail',
+  [CHAPTER_IDS.time]: 'Over time',
+  [CHAPTER_IDS.ranking]: 'The data',
+} as const satisfies Record<ChapterId, string>;
+
+/* -------------------------------------------------------------------------- */
+/* Insights                                                                    */
+/* -------------------------------------------------------------------------- */
+
+export const INSIGHT_COPY = {
+  eyebrow: 'What stands out',
+  /** Accessible name for the list. Not shown as a visible heading. */
+  listLabel: 'Key findings',
+  /** Instructions, shown once above the list and describing every link. */
+  hint: 'Select a finding to jump to the chapter that shows it.',
+  /** Off-screen tail of each link, so the destination is available to a screen
+      reader and not only to the eye. */
+  opensChapter: 'Opens',
+
+  /* One true sentence per finding. Each takes only values the response
+     contains, and the wording never asserts more than the numbers support. */
+  classAFewProducts: (count: number, share: string) =>
+    `Class A is ${count} ${count === 1 ? 'product' : 'products'} holding ${share} of the value.`,
+  longTailVsLeader: (
+    count: number,
+    tailShare: string,
+    leader: string,
+    leaderShare: string
+  ) =>
+    `The ${count} Class C products together hold ${tailShare} of the value — less than ${leader} alone (${leaderShare}).`,
+  trendChange: (latest: string, pct: string, direction: string, previous: string) =>
+    `${latest} was ${pct} ${direction} ${previous}.`,
+  trendAbove: 'above',
+  trendBelow: 'below',
+  valueMover: (product: string, change: string, period: string) =>
+    `${product} moved ${change} in ${period}, the largest change by value in the file.`,
+  duplicatesFound: (count: string) => `${count} duplicate rows were found.`,
+  missingCells: (count: string) => `${count} cells had no value.`,
+  rowsDropped: (count: string) => `${count} completely empty rows were dropped.`,
+  /* `pct` is already a formatted percentage, so it carries its own sign. */
+  rowConcentration: (count: string, total: string, pct: string) =>
+    `${count} of ${total} rows (${pct}) sit in the lowest value band.`,
+} as const;
+
+/* -------------------------------------------------------------------------- */
 /* Dashboard summary, KPIs, and filters                                        */
 /* -------------------------------------------------------------------------- */
 

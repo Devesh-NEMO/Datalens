@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Chapter } from "@/components/ui";
 import type { AnalysisResponse, ColumnCandidateResponse } from "@/lib/api";
-import { TOP_N_OPTIONS } from "@/lib/constants";
+import { CHAPTER_IDS, CHAPTER_TITLES, TOP_N_OPTIONS } from "@/lib/constants";
 
 interface ColumnSelectorProps {
   data: AnalysisResponse;
@@ -64,7 +64,7 @@ export function ColumnSelector({ data, onReanalyze, isLoading }: ColumnSelectorP
   };
 
   return (
-    <Chapter number={2} title="Settings">
+    <Chapter number={2} id={CHAPTER_IDS.settings} title={CHAPTER_TITLES[CHAPTER_IDS.settings]}>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <CandidateSelect

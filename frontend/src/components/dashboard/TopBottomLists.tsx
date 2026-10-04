@@ -8,7 +8,7 @@ import type {
   ProductGrowthItemResponse,
 } from "@/lib/api";
 import { formatNumber, formatPercent, formatChangePercent } from "@/lib/format";
-import { DOWNLOAD_COPY } from "@/lib/constants";
+import { CHAPTER_IDS, CHAPTER_TITLES, DOWNLOAD_COPY } from "@/lib/constants";
 import { exportTabularCsv } from "@/lib/tabularExport";
 import type { TablePdfColumn } from "@/lib/exportPdf";
 import { cn } from "@/lib/cn";
@@ -196,10 +196,10 @@ export function BottomList({ data, sourceFileName = "data.csv" }: ListProps) {
 export function TopBottomLists({ data, sourceFileName }: ListProps) {
   return (
     <>
-      <Chapter number={4} title="The leaders">
+      <Chapter number={4} id={CHAPTER_IDS.leaders} title={CHAPTER_TITLES[CHAPTER_IDS.leaders]}>
         <TopList data={data} sourceFileName={sourceFileName} />
       </Chapter>
-      <Chapter number={6} title="The long tail">
+      <Chapter number={6} id={CHAPTER_IDS.tail} title={CHAPTER_TITLES[CHAPTER_IDS.tail]}>
         <BottomList data={data} sourceFileName={sourceFileName} />
       </Chapter>
     </>

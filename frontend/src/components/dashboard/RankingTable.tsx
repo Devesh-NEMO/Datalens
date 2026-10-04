@@ -5,7 +5,7 @@ import { Chapter, ClassBadge } from "@/components/ui";
 import { DownloadButton } from "@/components/ui/DownloadButton";
 import type { AnalysisResponse, ProductGrowthItemResponse } from "@/lib/api";
 import { formatNumber, formatPercent, formatChangePercent } from "@/lib/format";
-import { DOWNLOAD_COPY } from "@/lib/constants";
+import { CHAPTER_IDS, CHAPTER_TITLES, DOWNLOAD_COPY } from "@/lib/constants";
 import { exportTabularCsv, exportTabularPdf } from "@/lib/tabularExport";
 import type { TablePdfColumn } from "@/lib/exportPdf";
 import { cn } from "@/lib/cn";
@@ -139,7 +139,7 @@ export function RankingTable({ data, sourceFileName = "data.csv" }: RankingTable
   };
 
   return (
-    <Chapter number={8} title="The data">
+    <Chapter number={8} id={CHAPTER_IDS.ranking} title={CHAPTER_TITLES[CHAPTER_IDS.ranking]}>
       <div className="space-y-4">
         {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-3">

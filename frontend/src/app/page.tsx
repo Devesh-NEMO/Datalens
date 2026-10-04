@@ -6,11 +6,13 @@ import { Sun, Moon, RotateCcw } from "lucide-react";
 import { ThemeProvider, useTheme } from "@/hooks/useTheme";
 import { useAnalyze } from "@/hooks/useAnalyze";
 import { Button, EmptyState, Spinner, ErrorBanner, Chapter } from "@/components/ui";
-import { TOP_N_OPTIONS } from "@/lib/constants";
+import { CHAPTER_IDS, CHAPTER_TITLES, TOP_N_OPTIONS } from "@/lib/constants";
 import { DEFAULT_METRIC_IDS, type MetricId } from "@/lib/metrics";
+import { generateInsights } from "@/lib/insights";
 import type { ReportSettings } from "@/lib/report/reportSections";
 import {
   Hero,
+  InsightList,
   QualityPanel,
   ColumnSelector,
   TopList,
@@ -43,6 +45,11 @@ function Dashboard({
 }) {
   const hasTrend = data.charts.monthly_trend && data.charts.monthly_trend.length > 0;
 
+  // Recomputed from the response rather than stored, so it is always consistent
+  // with the data on screen. Insights that point at "Over time" are simply absent
+  // when there are no dates, since the chapter they name does not exist.
+  const insights = useMemo(() => generateInsights(data), [data]);
+
   return (
     <div className="space-y-12">
       <Hero
@@ -50,14 +57,19 @@ function Dashboard({
         metricSelection={metricSelection}
         onMetricSelectionChange={onMetricSelectionChange}
       />
+
+      {/* Sits between the summary and chapter 1: the reader gets the findings
+          before any of the machinery that produced them. */}
+      <InsightList insights={insights} />
+
       <QualityPanel data={data} />
       <ColumnSelector data={data} onReanalyze={onReanalyze} isLoading={isLoading} />
 
-      <Chapter number={3} title="The shape">
+      <Chapter number={3} id={CHAPTER_IDS.shape} title={CHAPTER_TITLES[CHAPTER_IDS.shape]}>
         <ParetoChart data={data} sourceFileName={fileName} />
       </Chapter>
 
-      <Chapter number={4} title="The leaders">
+      <Chapter number={4} id={CHAPTER_IDS.leaders} title={CHAPTER_TITLES[CHAPTER_IDS.leaders]}>
         <TopProductsChart data={data} sourceFileName={fileName} />
         <h3 className="mt-8 mb-2 text-xs uppercase tracking-widest text-[var(--color-muted-text)]">
           Most important
@@ -65,14 +77,14 @@ function Dashboard({
         <TopList data={data} sourceFileName={fileName} />
       </Chapter>
 
-      <Chapter number={5} title="The split">
+      <Chapter number={5} id={CHAPTER_IDS.split} title={CHAPTER_TITLES[CHAPTER_IDS.split]}>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <AbcPieChart data={data} sourceFileName={fileName} />
           <AbcBarChart data={data} sourceFileName={fileName} />
         </div>
       </Chapter>
 
-      <Chapter number={6} title="The long tail">
+      <Chapter number={6} id={CHAPTER_IDS.tail} title={CHAPTER_TITLES[CHAPTER_IDS.tail]}>
         <h3 className="mb-2 text-xs uppercase tracking-widest text-[var(--color-muted-text)]">
           Least important
         </h3>
@@ -84,7 +96,7 @@ function Dashboard({
       </Chapter>
 
       {hasTrend && (
-        <Chapter number={7} title="Over time">
+        <Chapter number={7} id={CHAPTER_IDS.time} title={CHAPTER_TITLES[CHAPTER_IDS.time]}>
           <TrendChart data={data} sourceFileName={fileName} />
         </Chapter>
       )}

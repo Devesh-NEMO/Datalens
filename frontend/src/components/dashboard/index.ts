@@ -2,6 +2,7 @@ export { Hero } from './Hero';
 export { ExecutiveSummary } from './ExecutiveSummary';
 export { KpiRow } from './KpiRow';
 export { KpiCustomize } from './KpiCustomize';
+export { InsightList } from './InsightList';
 export { QualityPanel } from './QualityPanel';
 export { ColumnSelector } from './ColumnSelector';
 export { TopList, BottomList, TopBottomLists } from './TopBottomLists';

@@ -33,6 +33,12 @@
 
   --tracking-display: -0.03em;
   --tracking-label: 0.15em;
+
+  /* How far a chapter jump leaves between the top of the viewport and the
+     chapter heading it lands on. Read by `.scroll-mt-[var(--scroll-offset)]` on
+     the Chapter heading, so raising it when the sticky summary bar lands is a
+     one-value change rather than a hunt through every jump site. */
+  --scroll-offset: 1rem;
 }
 
 @layer base {
