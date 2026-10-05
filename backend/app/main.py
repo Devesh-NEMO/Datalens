@@ -11,7 +11,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api import routes as api_routes
+from app.api import router, v1_router
 from app.config import settings
 from app.core.errors import (
     AppException,
@@ -80,5 +80,5 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 # Register API routes: versioned /v1 surface plus the unversioned alias.
-app.include_router(api_routes.v1_router)
-app.include_router(api_routes.router)
+app.include_router(v1_router)
+app.include_router(router)

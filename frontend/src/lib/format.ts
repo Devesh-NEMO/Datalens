@@ -31,3 +31,7 @@ export function formatDate(period: string): string {
   const date = new Date(parseInt(year), parseInt(month) - 1);
   return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
+
+export const fmtValue = formatNumber;
+export const fmtPct = formatPercent;
+export const fmtNum = formatNumber;

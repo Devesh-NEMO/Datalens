@@ -2,6 +2,16 @@
 
 from pydantic import BaseModel, Field
 
+from app.schemas.extensions import (
+    AnomalySummaryResponse,
+    ChartRecommendationResponse,
+    ColumnRoleResponse,
+    DatasetKindResponse,
+    QualityIssueResponse,
+    SegmentResponse,
+    ShapeResponse,
+)
+
 
 class MetaResponse(BaseModel):
     """Metadata about the processed file and request timing."""
@@ -134,6 +144,20 @@ class QualityScoreResponse(BaseModel):
         description="Explanation of quality score based on penalties",
         examples=["Dataset demonstrates high completeness and integrity."],
     )
+    issues: list[QualityIssueResponse] = Field(
+        default_factory=list,
+        description=(
+            "Classified findings for the Data Quality Center: what happened, how many, "
+            "what Datalens did, and what to check. Ordered most severe first."
+        ),
+    )
+    critical_count: int = Field(
+        default=0,
+        description="Number of issues marked critical",
+        examples=[0],
+    )
+    warning_count: int = Field(default=0, description="Number of issues marked warning")
+    info_count: int = Field(default=0, description="Number of issues marked info")
 
 
 class DatasetProfileResponse(BaseModel):
@@ -413,6 +437,17 @@ class ChartsResponse(BaseModel):
     value_histogram: list[HistogramBucketResponse] = Field(
         description="10-bucket distribution histogram of the value metric",
     )
+    segments: list[SegmentResponse] = Field(
+        default_factory=list,
+        description=(
+            "Breakdowns of the measure by every groupable column, so a chart can be "
+            "offered for region, category or channel without per-dataset code"
+        ),
+    )
+    recommendations: list[ChartRecommendationResponse] = Field(
+        default_factory=list,
+        description="Chart types suited to this dataset, each with the reason why",
+    )
 
 
 class AnalysisResponse(BaseModel):
@@ -428,6 +463,26 @@ class AnalysisResponse(BaseModel):
     ranking: RankingResponse = Field(description="Product ranking and ABC/Pareto analysis")
     growth: GrowthResponse = Field(description="Period-over-period growth metrics")
     charts: ChartsResponse = Field(description="Chart-ready structured JSON data")
+    dataset_kind: DatasetKindResponse = Field(
+        default_factory=lambda: DatasetKindResponse(
+            kind="generic",
+            label="General tabular data",
+            meaning="",
+        ),
+        description="What kind of dataset this is, inferred from its column names",
+    )
+    anomalies: AnomalySummaryResponse = Field(
+        default_factory=lambda: AnomalySummaryResponse(detected=False, count=0),
+        description="Deterministic potential-anomaly scan",
+    )
+    shape: ShapeResponse = Field(
+        default_factory=ShapeResponse,
+        description="Which columns can be used for grouping, measuring and time",
+    )
+    columns: list[ColumnRoleResponse] = Field(
+        default_factory=list,
+        description="Per-column role assignment used to build the recommendations",
+    )
     warnings: list[str] = Field(
         default_factory=list,
         description="Warnings and informational notices",

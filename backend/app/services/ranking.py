@@ -87,6 +87,39 @@ def normalize_product_name(name: object) -> str:
     return s.lower() if s else "Unknown"
 
 
+def canonical_name_map(df: pd.DataFrame, product_col: str) -> tuple[pd.Series, dict[str, str], int]:
+    """Map a product column onto its canonical spelling.
+
+    Returns ``(normalised_key_series, normalised_key -> display_name, variants
+    merged)``. The display name for a group is its most frequent spelling, so
+    " macbook pro 16 " and "MacBook Pro 16" collapse onto the casing that
+    actually appears most in the file.
+
+    Shared by :func:`compute_ranking`, :func:`compute_growth` and the segment
+    builder, so every surface groups by exactly the same set of products. If
+    these disagreed, Products would list 15 rows while a chart of the same
+    column showed 48 groups.
+    """
+    raw = df[product_col].fillna("Unknown").astype(str).str.strip()
+    norm = raw.apply(normalize_product_name)
+
+    # Group the *raw* spellings by the normalised key, so each group holds every
+    # casing that appeared rather than the lowercase form repeated.
+    grouped = pd.DataFrame({"_key": norm.to_numpy(), "_raw": raw.to_numpy()}).groupby("_key")[
+        "_raw"
+    ].apply(list)
+
+    canonical: dict[str, str] = {}
+    variants_merged = 0
+    for norm_key, raw_list in grouped.items():
+        counts = Counter(raw_list)
+        canonical[norm_key] = counts.most_common(1)[0][0]
+        if len(counts) > 1:
+            variants_merged += len(counts) - 1
+
+    return norm, canonical, variants_merged
+
+
 def compute_ranking(
     df: pd.DataFrame,
     product_col: str,
@@ -112,21 +145,10 @@ def compute_ranking(
     working_df[value_col] = pd.to_numeric(working_df[value_col], errors="coerce").fillna(0.0)
 
     # Clean product names and resolve canonical casing
-    product_series = working_df[product_col].fillna("Unknown").astype(str).str.strip()
-    norm_series = product_series.apply(normalize_product_name)
+    norm_series, canonical_names, variants_merged_count = canonical_name_map(
+        working_df, product_col
+    )
     working_df["_norm_prod"] = norm_series
-
-    # Map normalized key -> most frequent display name
-    canonical_names: dict[str, str] = {}
-    variants_merged_count = 0
-
-    grouped_raw = working_df.groupby("_norm_prod")[product_col].apply(list)
-    for norm_key, raw_list in grouped_raw.items():
-        counts = Counter(raw_list)
-        best_display = counts.most_common(1)[0][0]
-        canonical_names[norm_key] = best_display
-        if len(counts) > 1:
-            variants_merged_count += len(counts) - 1
 
     # Group by normalized product and sum values
     aggregated = working_df.groupby("_norm_prod", as_index=False)[value_col].sum()
@@ -262,30 +284,17 @@ def compute_growth(
             warning="No date column detected or specified for growth analysis.",
         )
 
-    # 1. Normalize product names using the same function as compute_ranking
-    norm_series = df[product_col].fillna("Unknown").astype(str).str.strip()
-    norm_series = norm_series.apply(normalize_product_name)
-    df = df.copy()
-    df["_norm_prod"] = norm_series
-
-    # Map normalized key -> most frequent display name (same logic as ranking)
-    from collections import Counter
-
-    canonical_names: dict[str, str] = {}
-    working_df = df.copy()
-    grouped_raw = working_df.groupby("_norm_prod")[product_col].apply(list)
-    for norm_key, raw_list in grouped_raw.items():
-        counts = Counter(raw_list)
-        best_display = counts.most_common(1)[0][0]
-        canonical_names[norm_key] = best_display
-
-    # Apply canonical product name to working df
+    # 1. Drop rows with no readable date, then canonicalize product names using
+    #    the same mapping as compute_ranking.
     working_df = df.dropna(subset=[date_col]).copy()
     if len(working_df) == 0:
         return GrowthResult(
             has_growth_data=False,
             warning="Date column contains no valid timestamps.",
         )
+
+    norm_series, canonical_names, _variants = canonical_name_map(working_df, product_col)
+    working_df["_norm_prod"] = norm_series
 
     # Format period as YYYY-MM
     try:
