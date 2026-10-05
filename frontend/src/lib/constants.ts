@@ -513,3 +513,60 @@ export const DASHBOARD_COPY = {
   qualityFair: 'Fair',
   qualityPoor: 'Poor',
 } as const;
+
+/* -------------------------------------------------------------------------- */
+/* Trend indicators                                                            */
+/* -------------------------------------------------------------------------- */
+
+export const TREND_COPY = {
+  /** Named once above a group of badges instead of on each one. */
+  comparisonLabel: (latest: string, previous: string) => `${latest} vs ${previous}`,
+  /** Fallback wording when only one period is known. */
+  comparisonPrevious: 'vs previous period',
+
+  /** Words instead of an arrow, for a screen reader. */
+  rose: 'rose',
+  fell: 'fell',
+  unchanged: 'was unchanged',
+
+  noChange: 'no change',
+
+  /**
+   * The spoken phrase. `pct` arrives without its percent sign and may be empty,
+   * because a flat trend should read "was unchanged versus November 2025" rather
+   * than "was unchanged 0.0%".
+   */
+  srText: (direction: string, pct: string, period: string) =>
+    pct ? `${direction} ${pct}% versus ${period}` : `${direction} versus ${period}`,
+
+  /** Names the pair of periods the badges compare. */
+  totalValueAriaLabel: 'Total value trend',
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* Before and after cleaning                                                   */
+/* -------------------------------------------------------------------------- */
+
+export const CLEANING_COPY = {
+  eyebrow: 'Before and after',
+  /** Caption naming what the two columns hold. */
+  caption: 'What changed while the file was read',
+  before: 'Before',
+  after: 'After',
+  /** Accessible name for the empty corner cell above the measure column. */
+  measure: 'Measure',
+  rowsLabel: 'Rows',
+  columnsLabel: 'Columns',
+  /** Only reached when nothing in the file needed changing. */
+  noChanges: 'No changes to the data were needed.',
+
+  /* The counts below have no "before" figure in the response, so they are
+     labelled as work done rather than presented as a before/after pair. */
+  appliedEyebrow: 'While cleaning',
+  rowsDropped: (count: string) => `${count} completely empty rows dropped`,
+  columnsDropped: (names: string) => `Columns dropped: ${names}`,
+  nullLikeConverted: (count: string) => `${count} null-like values converted`,
+  failedDates: (count: string) => `${count} date cells could not be parsed`,
+  failedNumbers: (count: string) => `${count} numeric cells could not be parsed`,
+  unchanged: 'unchanged',
+} as const;

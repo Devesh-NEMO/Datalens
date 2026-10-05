@@ -4,12 +4,25 @@ import type { AnalysisResponse } from '@/lib/api';
 import { formatNumber, formatPercent } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { ClassBadge } from '@/components/ui/ClassBadge';
-import { DASHBOARD_COPY, asAbcClass } from '@/lib/constants';
+import { TrendBadge } from '@/components/dashboard/TrendBadge';
+import { DASHBOARD_COPY, TREND_COPY, asAbcClass } from '@/lib/constants';
 import { deriveMonthRange, qualityLevel, type StatusTone } from '@/lib/metrics';
+import { totalValueTrend, comparisonLabel } from '@/lib/trends';
 
 interface ExecutiveSummaryProps {
   data: AnalysisResponse;
   className?: string;
+}
+
+interface SummaryFact {
+  /** Stable id for React's key. Never rendered. */
+  textKey: string;
+  /**
+   * Renderable rather than a string, because the total-value row carries a trend
+   * badge next to its label.
+   */
+  label: React.ReactNode;
+  children: React.ReactNode;
 }
 
 const TONE_DOT: Record<StatusTone, string> = {
@@ -35,19 +48,37 @@ export function ExecutiveSummary({ data, className }: ExecutiveSummaryProps) {
   const monthRange = deriveMonthRange(data.charts?.monthly_trend);
   const qualityBadge = qualityLevel(quality.score);
 
-  const facts: Array<{ label: string; children: React.ReactNode }> = [];
+  // The badge sits on the total value because that is the figure whose movement
+  // changes the headline. Names its own comparison, since nothing else on screen
+  // would tell the reader what "Dec 2025 vs Nov 2025" was against.
+  const totalTrend = totalValueTrend(data);
+  const trendComparison = comparisonLabel(data);
+
+  const facts: SummaryFact[] = [];
 
   facts.push({
-    label: DASHBOARD_COPY.summaryTotalValue,
+    textKey: DASHBOARD_COPY.summaryTotalValue,
+    label: (
+      <span className="inline-flex items-baseline gap-2">
+        {DASHBOARD_COPY.summaryTotalValue}
+        <TrendBadge trend={totalTrend} comparison={trendComparison ?? undefined} />
+      </span>
+    ),
     children: (
       <span title={ranking.total_value.toLocaleString('en-US')}>
         {formatNumber(ranking.total_value)}
+        {/* The badge is not decorative: name what it measures for anyone who
+            cannot see the arrow, without duplicating it in every heading. */}
+        <span className="sr-only">
+          {totalTrend ? ` ${TREND_COPY.totalValueAriaLabel}: ${totalTrend.srText}` : ''}
+        </span>
       </span>
     ),
   });
 
   if (leader) {
     facts.push({
+      textKey: DASHBOARD_COPY.summaryTopProduct,
       label: DASHBOARD_COPY.summaryTopProduct,
       children: (
         <span className="inline-flex flex-wrap items-baseline gap-x-2">
@@ -63,6 +94,7 @@ export function ExecutiveSummary({ data, className }: ExecutiveSummaryProps) {
   }
 
   facts.push({
+    textKey: DASHBOARD_COPY.summaryQuality,
     label: DASHBOARD_COPY.summaryQuality,
     children: (
       /* The score is ordinary text and the level word carries the tone beside a
@@ -83,6 +115,7 @@ export function ExecutiveSummary({ data, className }: ExecutiveSummaryProps) {
   });
 
   facts.push({
+    textKey: DASHBOARD_COPY.summaryRowsProcessed,
     label: DASHBOARD_COPY.summaryRowsProcessed,
     children: <span>{formatNumber(meta.rows)}</span>,
   });
@@ -93,7 +126,9 @@ export function ExecutiveSummary({ data, className }: ExecutiveSummaryProps) {
 
       <dl className="mt-4 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
         {facts.map((fact) => (
-          <div key={fact.label} className="flex flex-col gap-1">
+          // Keyed on the plain label: it is a stable string, and the label now
+          // holds an element alongside it for the trend badge.
+          <div key={fact.textKey} className="flex flex-col gap-1">
             <dt className="text-xs uppercase tracking-widest text-[var(--color-muted-text)]">
               {fact.label}
             </dt>

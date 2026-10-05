@@ -6,6 +6,7 @@ import { Chapter } from '@/components/ui';
 import type { AnalysisResponse } from '@/lib/api';
 import { CHAPTER_IDS, CHAPTER_TITLES } from '@/lib/constants';
 import { formatNumber } from '@/lib/format';
+import { CleaningComparison } from '@/components/dashboard/CleaningComparison';
 
 interface QualityPanelProps {
   data: AnalysisResponse;
@@ -62,28 +63,15 @@ export function QualityPanel({ data }: QualityPanelProps) {
 
         <p className="text-sm text-[var(--color-muted-text)]">{quality.description}</p>
 
-        <div className="space-y-2">
-          <span className="label-xs">Cleaning</span>
-          <p className="text-sm text-[var(--color-muted-text)]">
-            {formatNumber(cleaning.rows_before)} rows in, {formatNumber(cleaning.rows_after)} out
-            {cleaning.rows_dropped > 0 && ` · ${formatNumber(cleaning.rows_dropped)} dropped`}
-            {(cleaning.columns_dropped ?? []).length > 0 &&
-              ` · columns dropped: ${(cleaning.columns_dropped ?? []).join(', ')}`}
-          </p>
-          {cleaning.null_like_values_converted > 0 && (
-            <p className="text-sm text-[var(--color-muted-text)]">
-              {formatNumber(cleaning.null_like_values_converted)} null-like values converted
-            </p>
-          )}
-          {(cleaning.failed_numeric_conversions > 0 ||
-            cleaning.failed_date_conversions > 0) && (
-            <p className="text-sm text-[var(--color-muted-text)]">
-              {formatNumber(cleaning.failed_numeric_conversions)} numeric and{' '}
-              {formatNumber(cleaning.failed_date_conversions)} date cells could not be parsed
-            </p>
-          )}
-          {(cleaning.conversions_performed ?? []).length > 0 && (
-            <ul className="mt-2 space-y-1">
+        {/* Replaces the prose summary this chapter used to carry: the same
+            numbers, arranged so the before/after difference is visible instead of
+            buried in a sentence. */}
+        <CleaningComparison data={data} />
+
+        {(cleaning.conversions_performed ?? []).length > 0 && (
+          <div className="space-y-2">
+            <span className="label-xs">Type conversions</span>
+            <ul className="space-y-1">
               {(cleaning.conversions_performed ?? []).map((conversion) => (
                 <li
                   key={conversion}
@@ -93,8 +81,8 @@ export function QualityPanel({ data }: QualityPanelProps) {
                 </li>
               ))}
             </ul>
-          )}
-        </div>
+          </div>
+        )}
 
         {visibleWarnings.length > 0 && (
           <div className="space-y-2">

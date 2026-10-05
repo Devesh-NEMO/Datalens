@@ -9,10 +9,10 @@ import type {
 } from "@/lib/api";
 import { formatNumber, formatPercent, formatChangePercent } from "@/lib/format";
 import { CHAPTER_IDS, CHAPTER_TITLES, DOWNLOAD_COPY } from "@/lib/constants";
+import { productTrend, comparisonLabel, type Trend } from "@/lib/trends";
+import { TrendBadge } from "@/components/dashboard/TrendBadge";
 import { exportTabularCsv } from "@/lib/tabularExport";
 import type { TablePdfColumn } from "@/lib/exportPdf";
-import { cn } from "@/lib/cn";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface ListProps {
   data: AnalysisResponse;
@@ -20,7 +20,15 @@ interface ListProps {
   sourceFileName?: string;
 }
 
-function buildGrowthMap(growth: AnalysisResponse["growth"]): Map<string, ProductGrowthItemResponse> {
+/**
+ * Products whose direction of travel is honest enough to show.
+ *
+ * Built through `productTrend` so a product whose `direction` label disagrees
+ * with its own percentage is left out rather than given a confident arrow.
+ */
+function buildGrowthMap(
+  growth: AnalysisResponse["growth"]
+): Map<string, ProductGrowthItemResponse> {
   const map = new Map<string, ProductGrowthItemResponse>();
   for (const g of growth.items ?? []) {
     map.set(g.product, g);
@@ -42,40 +50,35 @@ const LIST_COLUMNS: readonly TablePdfColumn[] = [
   { header: "Class", width: 44, align: "center" },
 ];
 
-function GrowthBadge({ growth }: { growth: ProductGrowthItemResponse | undefined }) {
-  if (!growth) return null;
-
-  const Icon =
-    growth.direction === "rising"
-      ? TrendingUp
-      : growth.direction === "falling"
-        ? TrendingDown
-        : Minus;
-
-  const color =
-    growth.direction === "rising"
-      ? "text-[var(--color-class-a)]"
-      : growth.direction === "falling"
-        ? "text-[var(--color-class-c)]"
-        : "text-[var(--color-muted-text)]";
-
-  return (
-    <span
-      className={cn("inline-flex items-center gap-1 text-xs", color)}
-      aria-label={`${growth.direction} ${formatChangePercent(growth.change_pct)}`}
-    >
-      <Icon className="h-3 w-3" aria-hidden="true" />
-      {formatChangePercent(growth.change_pct)}
-    </span>
-  );
+/**
+ * The direction badge for one row.
+ *
+ * Previously this read `direction` off the response directly and carried no
+ * comparison label, so a row could show "+10.3%" with nothing saying what it was
+ * against. It now resolves through `productTrend`, which withholds the badge when
+ * the label and the percentage disagree.
+ *
+ * The `vs Nov 2025` wording appears once per list rather than on all fifteen rows.
+ */
+function GrowthBadge({
+  trend,
+  comparison,
+}: {
+  trend: Trend | null | undefined;
+  comparison?: string;
+}) {
+  return <TrendBadge trend={trend} comparison={comparison} />;
 }
 
 function ProductRow({
   item,
   growth,
+  comparison,
 }: {
   item: ProductRankItemResponse;
   growth: ProductGrowthItemResponse | undefined;
+  /** Named on the first row of the list only; see the note in `GrowthBadge`. */
+  comparison?: string;
 }) {
   return (
     <li className="flex items-center justify-between py-2 border-b border-[var(--color-rule)] last:border-0">
@@ -86,7 +89,7 @@ function ProductRow({
         <span className="text-sm text-[var(--color-text)] truncate">{item.product}</span>
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
-        <GrowthBadge growth={growth} />
+        <GrowthBadge trend={productTrend(growth)} comparison={comparison} />
         <span className="text-sm text-[var(--color-text)] w-20 text-right">
           {formatNumber(item.value)}
         </span>
@@ -134,6 +137,7 @@ function listRows(
 export function TopList({ data, sourceFileName = "data.csv" }: ListProps) {
   const growthMap = buildGrowthMap(data.growth);
   const items = data.ranking.top_n;
+  const comparison = comparisonLabel(data);
 
   return (
     <div className="space-y-3">
@@ -153,8 +157,13 @@ export function TopList({ data, sourceFileName = "data.csv" }: ListProps) {
         />
       </div>
       <ul className="space-y-1">
-        {items.map((item) => (
-          <ProductRow key={item.rank} item={item} growth={growthMap.get(item.product)} />
+        {items.map((item, index) => (
+          <ProductRow
+            key={item.rank}
+            item={item}
+            growth={growthMap.get(item.product)}
+            comparison={index === 0 ? (comparison ?? undefined) : undefined}
+          />
         ))}
       </ul>
     </div>
@@ -165,6 +174,7 @@ export function TopList({ data, sourceFileName = "data.csv" }: ListProps) {
 export function BottomList({ data, sourceFileName = "data.csv" }: ListProps) {
   const growthMap = buildGrowthMap(data.growth);
   const items = data.ranking.bottom_n;
+  const comparison = comparisonLabel(data);
 
   return (
     <div className="space-y-3">
@@ -184,8 +194,13 @@ export function BottomList({ data, sourceFileName = "data.csv" }: ListProps) {
         />
       </div>
       <ul className="space-y-1">
-        {items.map((item) => (
-          <ProductRow key={item.rank} item={item} growth={growthMap.get(item.product)} />
+        {items.map((item, index) => (
+          <ProductRow
+            key={item.rank}
+            item={item}
+            growth={growthMap.get(item.product)}
+            comparison={index === 0 ? (comparison ?? undefined) : undefined}
+          />
         ))}
       </ul>
     </div>
