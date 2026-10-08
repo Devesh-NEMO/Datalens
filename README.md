@@ -295,6 +295,19 @@ AUTH_ENABLED=true
 AUTH_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
 ```
 
+> **Signing up needs `AUTH_SECRET`, even when auth is optional.** `register` and
+> `login` mint a signed session token, so they refuse to run until
+> `AUTH_SECRET` is set (`{"error": {"code": "auth_not_configured", ...}}`) —
+> the server will never fall back to a weak or built-in key. On a local
+> checkout, put it in `backend/.env` (untracked) and restart the backend:
+>
+> ```bash
+> cd backend
+> touch .env
+> grep -q '^AUTH_SECRET=' .env || \
+>   printf 'AUTH_SECRET="%s"\n' "$(python -c 'import secrets; print(secrets.token_urlsafe(48))')" >> .env
+> ```
+
 ### Endpoints
 
 | Endpoint | Purpose |
