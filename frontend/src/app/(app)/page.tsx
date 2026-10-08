@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Sun, Moon, RotateCcw } from "lucide-react";
-import { ThemeProvider, useTheme } from "@/hooks/useTheme";
+import { RotateCcw } from "lucide-react";
 import { useAnalyze } from "@/hooks/useAnalyze";
 import { Button, EmptyState, Spinner, ErrorBanner, Chapter } from "@/components/ui";
 import { CHAPTER_IDS, CHAPTER_TITLES, TOP_N_OPTIONS } from "@/lib/constants";
@@ -23,8 +21,6 @@ import {
 } from "@/components/dashboard";
 import { ParetoChart, TopProductsChart, AbcPieChart, AbcBarChart, HistogramChart, TrendChart } from "@/components/charts";
 import type { AnalysisResponse, AnalyzeOptions } from "@/lib/api";
-
-const queryClient = new QueryClient();
 
 function Dashboard({
   data,
@@ -113,7 +109,6 @@ function Dashboard({
 }
 
 function AppContent() {
-  const { theme, toggleTheme } = useTheme();
   const { data, error, isLoading, analyze, reset } = useAnalyze();
   const [file, setFile] = useState<File | null>(null);
 
@@ -187,37 +182,28 @@ function AppContent() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
+      {/* Analysis toolbar: branding, theme and account live in the app shell's
+          topbar now; this band only carries dataset-scoped controls. */}
       <header className="border-b border-[var(--color-rule)]">
-        <div className="max-w-[760px] mx-auto px-4 py-3 flex items-center justify-between">
-          <span className="font-serif italic text-lg text-[var(--color-text)]">Datalens</span>
-          <div className="flex items-center gap-3">
-            {file && (
-              <>
-                <span className="text-sm text-[var(--color-muted-text)] truncate max-w-[200px]">
-                  {file.name}
-                </span>
-                <Button variant="ghost" size="sm" onClick={handleReset}>
-                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  Analyze another file
-                </Button>
-                {data ? (
-                  <ReportOptions
-                    buildOptions={{ sourceFileName: file.name, data }}
-                    baseSettings={reportSettings}
-                  />
-                ) : null}
-              </>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleTheme}
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
-            >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-          </div>
+        <div className="max-w-[760px] mx-auto px-4 py-3 flex items-center justify-end gap-3">
+          {file && (
+            <>
+              <span className="text-sm text-[var(--color-muted-text)] truncate max-w-[200px]">
+                {file.name}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleReset}>
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                Analyze another file
+              </Button>
+              {data ? (
+                <ReportOptions
+                  buildOptions={{ sourceFileName: file.name, data }}
+                  baseSettings={reportSettings}
+                />
+              ) : null}
+            </>
+          )}
         </div>
       </header>
 
@@ -266,12 +252,8 @@ function AppContent() {
   );
 }
 
-export default function Home() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
-}
+/**
+ * The dashboard at `/`. Providers (theme, query client, auth) and the shell
+ * chrome live in the root and `(app)` layouts — this component is content only.
+ */
+export default AppContent;

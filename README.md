@@ -279,6 +279,56 @@ Configured in `app/config.py` and overrideable via environment variables (`.env`
 | `ABC_B_THRESHOLD` | `95.0` | Class B cumulative threshold percentage (`<= 95.0%`) |
 | `DEFAULT_TOP_N` | `10` | Default top/bottom items count |
 | `MAX_TOP_N` | `50` | Maximum allowed value for `top_n` |
+| `AUTH_ENABLED` | `false` | Require sign-in (`Authorization: Bearer <token>`) on `/v1` writes |
+| `AUTH_SECRET` | — | Token signing secret. Required (refused loudly when missing) if `AUTH_ENABLED` is on. Generate with `python -c "import secrets; print(secrets.token_urlsafe(48))"` |
+| `AUTH_TOKEN_TTL_HOURS` | `24` | Session token lifetime in hours |
+
+---
+
+## Authentication
+
+Auth is **off by default** — a fresh clone runs and analyses files with no
+configuration. Turning it on is one variable:
+
+```bash
+AUTH_ENABLED=true
+AUTH_SECRET="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+```
+
+### Endpoints
+
+| Endpoint | Purpose |
+| :--- | :--- |
+| `GET /v1/auth/session` | Who am I — safe with no token; also reports `auth_required` |
+| `POST /v1/auth/register` | Create an account → 201 with a session token |
+| `POST /v1/auth/login` | Exchange credentials for a session token |
+| `POST /v1/auth/logout` | Stateless: the client discards the token |
+| `GET /v1/auth/me` | The signed-in user (requires a token) |
+
+Errors are always `{"error": {"code", "message", "hint"}}`. Login returns the
+same sentence for an unknown email and a wrong password, so the endpoint is not
+an account-existence oracle; deactivated accounts are a distinct `403`.
+
+### How the frontend keeps the session
+
+The session token is a bearer token held in `localStorage` ("Remember me") or
+`sessionStorage` (single tab) and sent as `Authorization: Bearer <token>` on
+every API request. Expired tokens are treated as signed out locally, without a
+network round trip; there is no server-side session record, so logout is purely
+a client-side discard.
+
+**The tradeoff, stated plainly:** anything that can run JavaScript on the app's
+origin can read the token, so XSS becomes full account compromise. The current
+mitigations are hygiene — no tokens in URLs, no tokens in the DOM, no logging of
+secrets — not a cure. The planned hardening step is a Next.js route handler that
+proxies `/v1/auth/*`, sets the token in an **httpOnly + SameSite cookie**, and
+has `apiFetch` send requests cookie-first: the token then never lives where an
+injected script can read it. That is deliberately *not* implemented here.
+
+**Rate limiting is left to the deployment.** In-process limits are trivially
+bypassed by running more than one worker and would give a false sense of
+protection; put a real limiter in front of `/v1/auth/*` before exposing a
+public deployment.
 
 ---
 
