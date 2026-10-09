@@ -21,7 +21,7 @@ function Stat({ label, value }: StatProps) {
   return (
     <div className="space-y-1">
       <span className="label-xs">{label}</span>
-      <p className="font-serif text-[1.75rem] leading-none text-[var(--color-text)]">{value}</p>
+      <p className="text-[1.625rem] font-semibold tabular-nums leading-none text-[var(--color-text)]">{value}</p>
     </div>
   );
 }

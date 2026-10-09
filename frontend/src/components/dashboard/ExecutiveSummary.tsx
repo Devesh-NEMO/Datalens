@@ -132,7 +132,7 @@ export function ExecutiveSummary({ data, className }: ExecutiveSummaryProps) {
             <dt className="text-xs uppercase tracking-widest text-[var(--color-muted-text)]">
               {fact.label}
             </dt>
-            <dd className="font-serif text-xl leading-tight text-[var(--color-text)]">
+            <dd className="text-xl font-semibold tabular-nums leading-tight text-[var(--color-text)]">
               {fact.children}
             </dd>
           </div>
@@ -144,7 +144,7 @@ export function ExecutiveSummary({ data, className }: ExecutiveSummaryProps) {
             <dt className="text-xs uppercase tracking-widest text-[var(--color-muted-text)]">
               Months covered
             </dt>
-            <dd className="font-serif text-xl leading-tight text-[var(--color-text)]">
+            <dd className="text-xl font-semibold tabular-nums leading-tight text-[var(--color-text)]">
               {monthRange.label}
             </dd>
           </div>

@@ -111,9 +111,8 @@ export function ReportOptions({
         <DialogTrigger
           onClick={() => setOpen(true)}
           className={cn(
-            'inline-flex items-center gap-2 rounded-[6px] px-3 py-2 text-sm text-[var(--color-muted-text)]',
-            'transition-colors hover:text-[var(--color-text)]',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]',
+            'app-btn app-btn-outline app-btn-md',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]',
             className
           )}
         >

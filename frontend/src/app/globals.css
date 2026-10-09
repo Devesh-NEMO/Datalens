@@ -101,6 +101,45 @@
     line-height: 1.2;
   }
 
+  /* ---- Cursor affordances (start) ----
+     Tailwind v4 resets buttons to cursor:default, so every interactive
+     element gets an explicit pointer here, and disabled controls get
+     not-allowed. Text entry keeps the text caret. Tested in
+     tests/cursor.test.tsx, which extracts this block and asserts the
+     computed cursors, so keep the start/end markers in sync with the test. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  summary,
+  label[for],
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="switch"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"][aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  input:not([type]),
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  input[type="url"],
+  textarea {
+    cursor: text;
+  }
+  /* ---- Cursor affordances (end) ---- */
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;
@@ -134,8 +173,15 @@
     left: var(--sidebar-w);
     right: 0;
     height: var(--topbar-h);
-    background: var(--color-surface);
-    border-bottom: 1px solid var(--color-border);
+    /* One band, blended into the ambient background: translucent surface with
+       a soft blur and a single low-opacity divider. (backdrop-filter is
+       declared unprefixed only — lightningcss drops the standard property
+       when the -webkit- prefix is present, and modern Chromium no longer
+       reads the prefixed one.) */
+    background: color-mix(in srgb, var(--color-page) 74%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
     z-index: 30;
     display: flex;
     align-items: center;
@@ -147,7 +193,9 @@
     margin-left: var(--sidebar-w);
     padding-top: var(--topbar-h);
     min-height: 100vh;
-    background: var(--color-page);
+    /* The fixed AppBackground paints the page; content sits above it. */
+    position: relative;
+    z-index: 1;
   }
 
   @media (max-width: 768px) {
@@ -289,13 +337,23 @@
 
   /* ---- Dropzone ---- */
   .dropzone {
-    border: 2px dashed var(--color-border);
+    border: 1px dashed color-mix(in srgb, var(--color-text) 22%, transparent);
     border-radius: 16px;
-    transition: border-color 0.2s, background 0.2s;
+    background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+    transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+  .dropzone:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
   }
   .dropzone.active {
     border-color: #6366F1;
-    background: rgba(99,102,241,.04);
+    background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, #6366F1 16%, transparent);
+    transform: scale(1.01);
+  }
+  .dropzone.reject {
+    border-color: var(--color-critical);
+    background: color-mix(in srgb, var(--color-critical) 6%, transparent);
   }
 
   /* ---- Table ---- */
@@ -373,6 +431,341 @@
   .section-tab:hover:not(.active) { color: var(--color-text); }
 
   .control { border-radius: 6px; box-shadow: none; }
+
+  /* ---- App page foundation ---- */
+
+  /* Ambient, CSS-only background behind the app pages. No WebGL, no motion:
+     one radial glow near the top over the page colour, plus a faint grid that
+     fades out with a radial mask. Light mode is #F8FAFC with a pale
+     indigo/blue glow and an even fainter grid. */
+  .app-bg {
+    background:
+      radial-gradient(880px 520px at 18% -10%, rgba(99, 102, 241, 0.16), transparent 62%),
+      radial-gradient(720px 420px at 92% 4%, rgba(59, 130, 246, 0.10), transparent 60%),
+      var(--color-page);
+  }
+  .dark .app-bg {
+    background:
+      radial-gradient(960px 560px at 24% -12%, rgba(99, 102, 241, 0.20), transparent 62%),
+      radial-gradient(760px 460px at 94% 2%, rgba(14, 165, 233, 0.10), transparent 60%),
+      var(--color-page);
+  }
+  .app-bg-grid {
+    background-image:
+      linear-gradient(color-mix(in srgb, var(--color-accent) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 5%, transparent) 1px, transparent 1px);
+    background-size: 48px 48px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 0%, black 18%, transparent 72%);
+    mask-image: radial-gradient(ellipse at 50% 0%, black 18%, transparent 72%);
+  }
+  .dark .app-bg-grid {
+    background-image:
+      linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+  }
+
+  /* One shared page frame so every route's content starts at the same
+     x-position: max-width 1200px, centred, 24–32px side padding. */
+  .page-container {
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 24px;
+    padding-top: 28px;
+    padding-bottom: 64px;
+  }
+  @media (min-width: 768px) {
+    .page-container {
+      padding-inline: 32px;
+      padding-top: 36px;
+    }
+  }
+
+  .page-title {
+    font-size: 1.625rem; /* 26px */
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+  }
+  .page-description {
+    margin-top: 6px;
+    max-width: 64ch;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+  }
+
+  /* Card: slightly lifted surface, 1px border (10% white in dark), radius
+     14px, soft layered shadow. Interactive cards shift toward indigo on hover
+     with a 1px lift; accent cards get a short indigo→purple top bar. */
+  .app-card {
+    position: relative;
+    border-radius: 14px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 8px 24px -12px rgba(15, 23, 42, 0.14);
+  }
+  .dark .app-card {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 1px 2px rgba(2, 6, 23, 0.32),
+      0 16px 40px -20px rgba(2, 6, 23, 0.55);
+  }
+  .app-card-interactive {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .app-card-interactive:hover:not(:disabled):not([aria-disabled="true"]) {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 12px 32px -16px rgba(99, 102, 241, 0.35);
+  }
+  .dark .app-card-interactive:hover:not(:disabled):not([aria-disabled="true"]) {
+    box-shadow:
+      0 1px 2px rgba(2, 6, 23, 0.32),
+      0 20px 44px -20px rgba(99, 102, 241, 0.4);
+  }
+  .app-card-enter {
+    animation: auth-card-in 300ms ease-out both;
+  }
+  .app-card-accent-bar {
+    position: absolute;
+    top: 0;
+    left: 14px;
+    right: 14px;
+    height: 2px;
+    border-radius: 0 0 9999px 9999px;
+    background: linear-gradient(90deg, #6366F1, #8B5CF6);
+  }
+
+  /* Small dataset chip in the topbar: file name + row count. */
+  .app-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 260px;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid color-mix(in srgb, var(--color-text) 12%, transparent);
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .app-chip:hover {
+    border-color: color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+    color: var(--color-text);
+  }
+  .app-chip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .app-chip-count {
+    flex-shrink: 0;
+    padding: 0.125rem 0.45rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: color-mix(in srgb, var(--color-accent) 82%, var(--color-text));
+    font-weight: 600;
+  }
+
+  /* Inputs and selects share the login look: visible fill, 1px border, 44px
+     height, indigo focus ring. Reuses the same strokes as .field-control. */
+  .app-input,
+  .app-select {
+    height: 2.75rem; /* 44px */
+    border-radius: 0.625rem; /* 10px */
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  }
+  .app-input {
+    padding: 0 0.875rem;
+  }
+  .app-select {
+    padding: 0 0.625rem;
+  }
+  .app-input::placeholder { color: var(--color-text-muted); opacity: 0.8; }
+  .app-input:hover,
+  .app-select:hover {
+    border-color: color-mix(in srgb, var(--color-text-muted) 40%, var(--color-border));
+  }
+  .app-input:focus,
+  .app-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 26%, transparent);
+  }
+  .dark .app-input,
+  .dark .app-select {
+    background-color: color-mix(in srgb, var(--color-surface) 78%, transparent);
+    border-color: color-mix(in srgb, var(--color-text) 16%, transparent);
+  }
+  .dark .app-input:hover,
+  .dark .app-select:hover {
+    border-color: color-mix(in srgb, var(--color-text) 30%, transparent);
+  }
+
+  /* Sidebar navigation */
+  .app-nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.825rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .app-nav-link:hover {
+    background: var(--color-surface-2);
+    color: var(--color-text);
+  }
+  .app-nav-link[aria-current="page"] {
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    color: var(--color-accent);
+  }
+  .app-nav-link[aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 3px;
+    border-radius: 0 9999px 9999px 0;
+    background: var(--color-accent);
+  }
+
+  /* ---- Buttons ----
+     The app button chrome lives here (components layer) rather than as
+     Tailwind utilities so that per-use utility overrides — e.g. the auth
+     submit button, which paints its own indigo stops and shadow — always win
+     by layer order. */
+  .app-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    user-select: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease,
+      box-shadow 0.15s ease, opacity 0.15s ease;
+  }
+  .app-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-page), 0 0 0 4px #6366F1;
+  }
+  .app-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .app-btn-primary {
+    background: #6366F1;
+    color: #FFFFFF;
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.28),
+      0 8px 20px -10px rgba(99, 102, 241, 0.6);
+  }
+  .app-btn-primary:hover:not(:disabled) {
+    background: #4F46E5;
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.22),
+      0 12px 28px -12px rgba(79, 70, 229, 0.65);
+  }
+  .app-btn-primary:active:not(:disabled) {
+    background: #4338CA;
+  }
+
+  .app-btn-outline {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+  .app-btn-outline:hover:not(:disabled) {
+    background: var(--color-surface-2);
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  }
+
+  .app-btn-ghost {
+    background: transparent;
+    color: var(--color-text);
+  }
+  .app-btn-ghost:hover:not(:disabled) {
+    background: var(--color-surface-2);
+  }
+
+  .app-btn-danger {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--color-critical) 50%, transparent);
+    color: var(--color-critical);
+  }
+  .app-btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-critical) 8%, transparent);
+  }
+
+  .app-btn-sm { height: 2.25rem; padding-inline: 0.875rem; }   /* 36px */
+  .app-btn-md { height: 2.5rem; padding-inline: 1rem; }        /* 40px */
+  .app-btn-lg { height: 2.75rem; padding-inline: 1.25rem; }    /* 44px */
+
+  /* A bordered link that reads as a secondary button (sidebar "New dataset"). */
+  .app-btn-secondary-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding-inline: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+  .app-btn-secondary-link:hover {
+    background: var(--color-surface-2);
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  }
+
+  /* Soft indigo circle used behind upload/sample icons. */
+  .app-icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: color-mix(in srgb, #6366F1 12%, transparent);
+    color: #6366F1;
+  }
+
+  /* Tiny format chip inside the dropzone ("CSV / TSV / TXT / TAB"). */
+  .app-file-chip {
+    padding: 0.125rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid color-mix(in srgb, var(--color-text) 10%, transparent);
+    background: color-mix(in srgb, var(--color-text) 5%, transparent);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+  }
 }
 
 /* =========================================================

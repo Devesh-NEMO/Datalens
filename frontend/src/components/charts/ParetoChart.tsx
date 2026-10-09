@@ -26,7 +26,7 @@ interface ParetoChartProps {
 }
 
 /** One-line description reused as the chart's caption in exports. */
-const PARETO_CAPTION =
+export const PARETO_CAPTION =
   "Bars show each product's value. The line is the running cumulative share, with reference lines at 80% and 95%.";
 
 export function ParetoChart({ data, sourceFileName = "data.csv" }: ParetoChartProps) {
@@ -84,17 +84,13 @@ export function ParetoChart({ data, sourceFileName = "data.csv" }: ParetoChartPr
 /**
  * The plot on its own, so the offscreen export can render it without the
  * download menu and screen-reader description that only belong on screen.
- */
-/**
- * The plot on its own, so the offscreen export can render it without the
- * download menu and screen-reader description that only belong on screen.
  *
  * `width`/`height` are defaults, not requirements: on screen a
  * ResponsiveContainer injects its own measured values, and Recharts renders
  * nothing at all without them. The export path renders this bare, so it has to
  * supply a size.
  */
-function ParetoPlot({
+export function ParetoPlot({
   chartData,
   width = 760,
   height = 300,

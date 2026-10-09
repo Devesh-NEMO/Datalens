@@ -4,36 +4,27 @@ import { forwardRef, ButtonHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'outline' | 'ghost';
+  /**
+   * primary = solid indigo (#6366F1 → #4F46E5, white AA text);
+   * outline = bordered surface with hover tint;
+   * ghost = low emphasis; danger = outlined critical for destructive actions.
+   */
+  variant?: 'primary' | 'outline' | 'ghost' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
 }
 
+/**
+ * The app's button. Visuals live in `.app-btn*` classes in the components
+ * layer (globals.css) so per-use utilities — like the auth submit button's
+ * own indigo stops and shadow — always override them by CSS layer order.
+ */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'outline', size = 'md', loading, disabled, children, ...props }, ref) => {
-    const baseStyles = `
-      inline-flex items-center justify-center font-medium transition-colors
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]
-      focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-page)]
-      disabled:opacity-50 disabled:cursor-not-allowed rounded-[6px]
-    `;
-
-    const variants = {
-      primary: 'bg-[var(--color-text)] text-[var(--color-page)] hover:opacity-90',
-      outline: 'border border-[var(--color-rule)] bg-transparent hover:bg-[var(--color-rule)] text-[var(--color-text)]',
-      ghost: 'bg-transparent hover:bg-[var(--color-rule)] text-[var(--color-text)]',
-    };
-
-    const sizes = {
-      sm: 'px-3 py-1.5 text-sm gap-1.5',
-      md: 'px-4 py-2 text-sm gap-2',
-      lg: 'px-6 py-3 text-base gap-2',
-    };
-
     return (
       <button
         ref={ref}
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={cn('app-btn', `app-btn-${variant}`, `app-btn-${size}`, className)}
         disabled={disabled || loading}
         {...props}
       >

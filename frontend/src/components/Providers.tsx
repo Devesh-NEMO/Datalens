@@ -10,6 +10,7 @@ import { useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/hooks/useTheme';
 import { AuthProvider } from '@/hooks/useAuth';
+import { DatasetProvider } from '@/hooks/useDataset';
 
 export function Providers({ children }: { children: ReactNode }) {
   // Created once per app load, in the client, so no query cache is ever shared
@@ -19,7 +20,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <DatasetProvider>{children}</DatasetProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

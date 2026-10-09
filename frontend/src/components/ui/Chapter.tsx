@@ -32,7 +32,7 @@ export function Chapter({ number, title, id, children, className }: ChapterProps
         <h2
           id={id ? chapterHeadingId(id) : undefined}
           tabIndex={-1}
-          className="scroll-mt-[var(--scroll-offset)] font-serif text-chapter leading-[1.15] text-[var(--color-text)]"
+          className="scroll-mt-[var(--scroll-offset)] text-lg font-semibold leading-snug tracking-tight text-[var(--color-text)]"
         >
           {title}
         </h2>

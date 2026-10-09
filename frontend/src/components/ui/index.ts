@@ -1,4 +1,5 @@
 export { Button } from './Button';
+export { Card } from './Card';
 export { ClassBadge } from './ClassBadge';
 export { StatNumber } from './StatNumber';
 export { Chapter } from './Chapter';

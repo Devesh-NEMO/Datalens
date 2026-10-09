@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { RotateCcw } from "lucide-react";
 import { useAnalyze } from "@/hooks/useAnalyze";
+import { useDataset } from "@/hooks/useDataset";
 import { Button, EmptyState, Spinner, ErrorBanner, Chapter } from "@/components/ui";
+import { PageContainer, PageHeader } from "@/components/app";
 import { CHAPTER_IDS, CHAPTER_TITLES, TOP_N_OPTIONS } from "@/lib/constants";
 import { DEFAULT_METRIC_IDS, type MetricId } from "@/lib/metrics";
 import { generateInsights } from "@/lib/insights";
@@ -110,6 +112,7 @@ function Dashboard({
 
 function AppContent() {
   const { data, error, isLoading, analyze, reset } = useAnalyze();
+  const { setDataset, clearDataset } = useDataset();
   const [file, setFile] = useState<File | null>(null);
 
   // Which figures the KPI row shows. Lives here rather than inside KpiRow so
@@ -118,6 +121,20 @@ function AppContent() {
   const [metricSelection, setMetricSelection] = useState<MetricId[]>([
     ...DEFAULT_METRIC_IDS,
   ]);
+
+  // Publish the finished analysis to the shared dataset context so the shell
+  // topbar can show the chip and Reports can run its report lab. The context
+  // survives route changes; the page's own useAnalyze state does not.
+  useEffect(() => {
+    if (data) {
+      setDataset({ data, fileName: file?.name ?? "data.csv" });
+    }
+  }, [data, file, setDataset]);
+
+  // A failed re-analysis must not leave the previous dataset looking current.
+  useEffect(() => {
+    if (error) clearDataset();
+  }, [error, clearDataset]);
 
   // A new file starts from the default figures again: a selection made for one
   // dataset says nothing about the next one, and a metric the new file cannot
@@ -151,7 +168,13 @@ function AppContent() {
     setFile(null);
     setMetricSelection([...DEFAULT_METRIC_IDS]);
     reset();
-  }, [reset]);
+    clearDataset();
+  }, [reset, clearDataset]);
+
+  const handleDismissError = useCallback(() => {
+    reset();
+    clearDataset();
+  }, [reset, clearDataset]);
 
   // Columns chosen for this analysis, echoed on the report cover. Read from the
   // response so a re-analysis with different columns is reflected.
@@ -165,8 +188,8 @@ function AppContent() {
       includeRankingTable: true,
       tableScopeAll: false,
       topN: data?.ranking?.top_n?.length ?? TOP_N_OPTIONS[1],
-      productColumn: data?.selection?.product_column ?? '',
-      valueColumn: data?.selection?.value_column ?? '',
+      productColumn: data?.selection?.product_column ?? "",
+      valueColumn: data?.selection?.value_column ?? "",
       dateColumn: data?.selection?.date_column ?? null,
     }),
     [data]
@@ -181,74 +204,63 @@ function AppContent() {
     [analyze, file]
   );
 
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <Spinner size="lg" message="Analyzing your data..." />
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <ErrorBanner
+          code={error.code}
+          message={error.message}
+          hint={error.hint}
+          onDismiss={handleDismissError}
+        />
+      </PageContainer>
+    );
+  }
+
+  if (!data) {
+    return <EmptyState onUpload={handleFileSelect} onSampleSelect={handleSampleSelect} isLoading={isLoading} />;
+  }
+
+  const fileName = file?.name ?? "data.csv";
+
   return (
-    <div className="flex flex-col">
-      {/* Analysis toolbar: branding, theme and account live in the app shell's
-          topbar now; this band only carries dataset-scoped controls. */}
-      <header className="border-b border-[var(--color-rule)]">
-        <div className="max-w-[760px] mx-auto px-4 py-3 flex items-center justify-end gap-3">
-          {file && (
-            <>
-              <span className="text-sm text-[var(--color-muted-text)] truncate max-w-[200px]">
-                {file.name}
-              </span>
-              <Button variant="ghost" size="sm" onClick={handleReset}>
-                <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                Analyze another file
-              </Button>
-              {data ? (
-                <ReportOptions
-                  buildOptions={{ sourceFileName: file.name, data }}
-                  baseSettings={reportSettings}
-                />
-              ) : null}
-            </>
-          )}
-        </div>
-      </header>
-
-      <main className="flex-1">
-        <div className="max-w-[760px] mx-auto px-4 py-8">
-          {error && (
-            <div className="mb-6">
-              <ErrorBanner
-                code={error.code}
-                message={error.message}
-                hint={error.hint}
-                onDismiss={() => reset()}
-              />
-            </div>
-          )}
-
-          {isLoading && (
-            <div className="py-20">
-              <Spinner size="lg" message="Analyzing your data..." />
-            </div>
-          )}
-
-          {!isLoading && !data && (
-            <EmptyState
-              onUpload={handleFileSelect}
-              onSampleSelect={handleSampleSelect}
-              isLoading={isLoading}
+    <PageContainer>
+      <PageHeader
+        title="Overview"
+        description={`ABC and Pareto analysis of ${fileName}.`}
+        actions={
+          <>
+            <Button variant="ghost" size="sm" onClick={handleReset}>
+              <RotateCcw className="h-4 w-4" aria-hidden="true" />
+              Analyze another file
+            </Button>
+            <ReportOptions
+              buildOptions={{ sourceFileName: fileName, data }}
+              baseSettings={reportSettings}
             />
-          )}
-
-          {!isLoading && data && (
-            <Dashboard
-              data={data}
-              fileName={file?.name ?? 'data.csv'}
-              onReanalyze={handleReanalyze}
-              isLoading={isLoading}
-              reportSettings={reportSettings}
-              metricSelection={metricSelection}
-              onMetricSelectionChange={setMetricSelection}
-            />
-          )}
-        </div>
-      </main>
-
-    </div>
+          </>
+        }
+      />
+      <div className="mt-8">
+        <Dashboard
+          data={data}
+          fileName={fileName}
+          onReanalyze={handleReanalyze}
+          isLoading={isLoading}
+          reportSettings={reportSettings}
+          metricSelection={metricSelection}
+          onMetricSelectionChange={setMetricSelection}
+        />
+      </div>
+    </PageContainer>
   );
 }
 

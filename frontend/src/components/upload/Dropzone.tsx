@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, FileUp, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { DROPZONE_ACCEPT } from '@/lib/constants';
+import { ACCEPTED_FORMATS_SUMMARY, DROPZONE_ACCEPT, MAX_FILE_SIZE_MB } from '@/lib/constants';
 import {
   DROPZONE_HELPER_TEXT,
   validateSelection,
@@ -17,9 +17,11 @@ interface DropzoneProps {
 }
 
 /**
- * Drag-and-drop with a click-to-browse fallback. Keyboard operable because
- * react-dropzone wires the Enter/Space handlers onto the root element and
- * exposes it as a labelled button.
+ * Drag-and-drop with a click-to-browse fallback, styled as a real card: a
+ * visible dashed border with decent contrast, a tinted surface, an upload icon
+ * in a soft indigo circle, and file-type chips plus the size limit. Keyboard
+ * operable because react-dropzone wires the Enter/Space handlers onto the root
+ * element and exposes it as a labelled button.
  */
 export function Dropzone({ onFileSelect, isLoading = false }: DropzoneProps) {
   const [rejection, setRejection] = useState<FileRejection | null>(null);
@@ -69,30 +71,37 @@ export function Dropzone({ onFileSelect, isLoading = false }: DropzoneProps) {
         aria-disabled={isLoading}
         aria-label="Upload a data file. Drag and drop, or press Enter to browse."
         className={cn(
-          'flex flex-col items-center justify-center gap-3 p-8 control',
-          'border border-dashed transition-colors cursor-pointer text-center',
+          'dropzone flex flex-col items-center justify-center gap-4 px-8 py-10 text-center',
           isLoading && 'opacity-60 cursor-not-allowed',
-          isDragReject
-            ? 'border-[var(--color-class-c)] bg-[var(--color-class-c)]/10'
-            : isDragActive
-              ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
-              : 'border-[var(--color-rule)] hover:border-[var(--color-muted-text)]'
+          isDragReject ? 'reject' : isDragActive ? 'active' : undefined
         )}
       >
         <input {...getInputProps()} disabled={isLoading} className="sr-only" />
 
         {isDragActive ? (
           <>
-            <FileUp className="h-8 w-8 text-[var(--color-accent)]" aria-hidden="true" />
+            <span className="app-icon-circle h-14 w-14">
+              <FileUp className="h-6 w-6" aria-hidden="true" />
+            </span>
             <p className="text-[var(--color-text)]">Drop it here</p>
           </>
         ) : (
           <>
-            <Upload className="h-8 w-8 text-[var(--color-muted-text)]" aria-hidden="true" />
-            <p className="text-[var(--color-text)]">
-              {isLoading ? 'Analyzing…' : 'Drag & drop, or click to browse'}
-            </p>
-            <p className="label-xs">{DROPZONE_HELPER_TEXT}</p>
+            <span className="app-icon-circle h-14 w-14">
+              <Upload className="h-6 w-6" aria-hidden="true" />
+            </span>
+            <div className="space-y-1">
+              <p className="text-[15px] font-medium text-[var(--color-text)]">
+                {isLoading ? 'Analyzing…' : 'Drag & drop, or click to browse'}
+              </p>
+              <p className="label-xs">{DROPZONE_HELPER_TEXT}</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-1.5">
+              <span className="app-file-chip">{ACCEPTED_FORMATS_SUMMARY}</span>
+              <span className="text-xs text-[var(--color-text-muted)]">
+                up to {MAX_FILE_SIZE_MB} MB
+              </span>
+            </div>
           </>
         )}
       </div>
@@ -102,7 +111,7 @@ export function Dropzone({ onFileSelect, isLoading = false }: DropzoneProps) {
         {rejection && (
           <div className="mt-3 flex items-start gap-2 text-sm">
             <AlertCircle
-              className="h-4 w-4 flex-shrink-0 mt-0.5 text-[var(--color-class-c)]"
+              className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-critical)]"
               aria-hidden="true"
             />
             <div>

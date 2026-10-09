@@ -35,7 +35,7 @@ function CandidateSelect({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 text-sm rounded-[6px] border border-[var(--color-rule)] bg-transparent text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+        className="app-select w-full"
       >
         {candidates.map((c) => (
           <option key={c.name} value={c.name}>
@@ -95,7 +95,7 @@ export function ColumnSelector({ data, onReanalyze, isLoading }: ColumnSelectorP
             <select
               value={topN}
               onChange={(e) => setTopN(Number(e.target.value))}
-              className="px-3 py-2 text-sm rounded-[6px] border border-[var(--color-rule)] bg-transparent text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              className="app-select w-full"
             >
               {TOP_N_OPTIONS.map((n) => (
                 <option key={n} value={n}>

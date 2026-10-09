@@ -41,7 +41,7 @@ export function StatNumber({
 }: StatNumberProps) {
   return (
     <div className={cn('flex flex-col items-start', className)} title={title}>
-      <span className="font-serif text-stat leading-none text-[var(--color-text)]">{value}</span>
+      <span className="text-[1.75rem] font-semibold tabular-nums leading-none text-[var(--color-text)] md:text-[2rem]">{value}</span>
       <span className="label-xs mt-2">{label}</span>
       {status && (
         <span className="mt-1 inline-flex items-center gap-1.5 text-xs text-[var(--color-muted-text)]">

@@ -144,10 +144,10 @@ export function CleaningComparison({ data, className }: CleaningComparisonProps)
                   <th scope="row" className="py-2.5 text-left font-normal text-[var(--color-muted-text)]">
                     {measure.label}
                   </th>
-                  <td className="py-2.5 text-right font-serif tabular-nums text-[var(--color-muted-text)]">
+                  <td className="py-2.5 text-right font-semibold tabular-nums text-[var(--color-muted-text)]">
                     {measure.before}
                   </td>
-                  <td className="py-2.5 text-right font-serif tabular-nums text-[var(--color-text)]">
+                  <td className="py-2.5 text-right font-semibold tabular-nums text-[var(--color-text)]">
                     {measure.after}
                     {!measure.changed && (
                       <span className="sr-only"> {CLEANING_COPY.unchanged}</span>

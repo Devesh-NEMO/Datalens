@@ -7,7 +7,7 @@ import type { AnalysisResponse, ProductGrowthItemResponse } from "@/lib/api";
 import { formatNumber, formatPercent, formatChangePercent } from "@/lib/format";
 import { CHAPTER_IDS, CHAPTER_TITLES, DOWNLOAD_COPY } from "@/lib/constants";
 import { exportTabularCsv, exportTabularPdf } from "@/lib/tabularExport";
-import type { TablePdfColumn } from "@/lib/exportPdf";
+import { RANKING_TABLE_COLUMNS } from "@/lib/rankingExport";
 import { cn } from "@/lib/cn";
 import { FileText, Search, ChevronUp, ChevronDown } from "lucide-react";
 
@@ -21,20 +21,10 @@ type SortKey = "rank" | "product" | "value" | "share_pct" | "cumulative_pct" | "
 type SortDir = "asc" | "desc";
 
 /**
- * Column widths in PDF points. A4 portrait leaves 483pt between the margins,
- * and the product column takes whatever the fixed columns do not.
+ * What a download contains: the rows currently visible after filtering and
+ * sorting, not just the current page. Someone who searched for a product
+ * expects the export to match what they are looking at.
  */
-const PDF_COLUMNS: readonly TablePdfColumn[] = [
-  { header: "Rank", width: 34, align: "right" },
-  // No width: the product column absorbs whatever the fixed columns leave over.
-  { header: "Product" },
-  { header: "Value", width: 78, align: "right" },
-  { header: "Share %", width: 56, align: "right" },
-  { header: "Cumulative %", width: 68, align: "right" },
-  { header: "Class", width: 38, align: "center" },
-  { header: "Growth %", width: 62, align: "right" },
-];
-
 export function RankingTable({ data, sourceFileName = "data.csv" }: RankingTableProps) {
   const { ranking, growth } = data;
   const [sortKey, setSortKey] = useState<SortKey>("rank");
@@ -123,7 +113,7 @@ export function RankingTable({ data, sourceFileName = "data.csv" }: RankingTable
       title: DOWNLOAD_COPY.rankingTableLabel,
       caption: DOWNLOAD_COPY.rankingTableCaption,
       sourceFileName,
-      columns: PDF_COLUMNS,
+      columns: RANKING_TABLE_COLUMNS,
       rows: exportRows,
     }),
     [exportRows, sourceFileName]
@@ -153,7 +143,7 @@ export function RankingTable({ data, sourceFileName = "data.csv" }: RankingTable
                 setSearch(e.target.value);
                 setPage(0);
               }}
-              className="w-full pl-9 pr-3 py-2 text-sm rounded-[6px] border border-[var(--color-rule)] bg-transparent text-[var(--color-text)] placeholder:text-[var(--color-muted-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              className="app-input w-full pl-9 pr-3"
               aria-label="Search products"
             />
           </div>

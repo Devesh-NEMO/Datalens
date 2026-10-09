@@ -41,7 +41,7 @@ export function Hero({ data, metricSelection, onMetricSelectionChange }: HeroPro
     <div className="space-y-8">
       <div className="space-y-4">
         <span className="label-xs">The finding</span>
-        <h1 className="font-serif text-hero leading-[1.05] text-[var(--color-text)]">
+        <h1 className="text-balance text-4xl font-semibold leading-[1.12] tracking-tight text-[var(--color-text)] md:text-5xl">
           <HighlightedParetoSummary summary={ranking.pareto_summary} />
         </h1>
       </div>
