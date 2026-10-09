@@ -1,15 +1,18 @@
 import type { ReactNode } from 'react';
 
-/** Shared field chrome: thin border, 8px radius, indigo focus ring. */
-export const INPUT_CLASS =
-  'w-full rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 disabled:opacity-60';
+/** Shared field chrome: visible surface, 1px border, 44px height, 10px radius,
+ *  indigo focus ring (see `.field-control` in globals.css). */
+export const INPUT_CLASS = 'field-control';
 
-export const FIELD_LABEL_CLASS =
-  'block text-sm font-medium text-[var(--color-text)] mb-1.5';
+/** Left padding for fields that carry a leading icon. */
+export const FIELD_WITH_ICON_CLASS = 'field-control field-with-icon';
+
+export const FIELD_LABEL_CLASS = 'block text-sm font-medium text-[var(--color-text)] mb-2';
 
 export const FIELD_HINT_CLASS = 'mt-1.5 text-xs text-[var(--color-text-muted)]';
 
-export const FIELD_ERROR_CLASS = 'mt-1.5 text-xs text-[var(--color-critical)]';
+export const FIELD_ERROR_CLASS =
+  'mt-1.5 flex items-start gap-1.5 text-xs leading-relaxed text-[var(--color-critical)]';
 
 export interface AuthCardProps {
   /** The single heading for the page — an `<h1>`. */
@@ -23,20 +26,30 @@ export interface AuthCardProps {
 }
 
 /**
- * The card the login and register forms share: 420px max width, 12px radius,
- * thin border, subtle shadow. Sits on the `(auth)` layout's calm background.
+ * The card the login and register forms share: 440px max width, 16px radius,
+ * restrained frosted surface (semi-opaque + blur), layered shadow, and a
+ * one-time 300ms fade-and-rise entrance (`auth-card-enter` collapses to a
+ * static card under `prefers-reduced-motion`).
  */
 export function AuthCard({ title, description, children, footer }: AuthCardProps) {
   return (
-    <section className="w-full rounded-[12px] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm sm:p-8">
+    <section className="auth-card auth-card-enter w-full max-w-[440px] rounded-[16px] p-6 sm:p-8">
       <header className="mb-6">
-        <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text)]">{title}</h1>
+        <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-[var(--color-text)]">
+          {title}
+        </h1>
         {description ? (
-          <p className="mt-1 text-sm text-[var(--color-text-muted)]">{description}</p>
+          <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-text-muted)]">
+            {description}
+          </p>
         ) : null}
       </header>
       {children}
-      {footer ? <div className="mt-6 text-center text-sm text-[var(--color-text-muted)]">{footer}</div> : null}
+      {footer ? (
+        <div className="mt-8 border-t border-[color:color-mix(in_srgb,var(--color-text)_12%,transparent)] pt-5 text-center text-sm text-[var(--color-text-muted)]">
+          {footer}
+        </div>
+      ) : null}
     </section>
   );
 }

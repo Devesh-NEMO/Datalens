@@ -1,10 +1,11 @@
 'use client';
 
+import { CircleAlert, Mail } from 'lucide-react';
 import {
   FIELD_ERROR_CLASS,
   FIELD_HINT_CLASS,
   FIELD_LABEL_CLASS,
-  INPUT_CLASS,
+  FIELD_WITH_ICON_CLASS,
 } from './AuthCard';
 
 export interface EmailFieldProps {
@@ -21,7 +22,8 @@ export interface EmailFieldProps {
   autoFocus?: boolean;
 }
 
-/** Real `<label>`, `autocomplete="email"`, `aria-invalid` + `aria-describedby`. */
+/** Real `<label>`, `autocomplete="email"`, `aria-invalid` + `aria-describedby`,
+ *  a leading Mail icon, and the error hint next to the field. */
 export function EmailField({
   id,
   value,
@@ -41,22 +43,30 @@ export function EmailField({
       <label htmlFor={id} className={FIELD_LABEL_CLASS}>
         Email
       </label>
-      <input
-        id={id}
-        name="email"
-        type="email"
-        inputMode="email"
-        autoComplete="email"
-        autoFocus={autoFocus}
-        required
-        value={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        placeholder="you@example.com"
-        aria-invalid={Boolean(error)}
-        aria-describedby={describedBy}
-        className={INPUT_CLASS}
-      />
+      <div className="relative">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+        >
+          <Mail className="h-4 w-4" />
+        </span>
+        <input
+          id={id}
+          name="email"
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoFocus={autoFocus}
+          required
+          value={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="you@example.com"
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          className={`${FIELD_WITH_ICON_CLASS} ${error ? 'invalid' : ''}`}
+        />
+      </div>
       {hint ? (
         <p id={hintId} className={FIELD_HINT_CLASS}>
           {hint}
@@ -64,7 +74,8 @@ export function EmailField({
       ) : null}
       {error ? (
         <p id={errorId} className={FIELD_ERROR_CLASS}>
-          {error}
+          <CircleAlert aria-hidden="true" className="mt-[2px] h-3.5 w-3.5 shrink-0" />
+          <span>{error}</span>
         </p>
       ) : null}
     </div>

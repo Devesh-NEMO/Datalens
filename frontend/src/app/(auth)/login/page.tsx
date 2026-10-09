@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Check } from 'lucide-react';
 import { AuthCard, AuthError, EmailField, PasswordField, SubmitButton } from '@/components/auth';
 import { useAuth } from '@/hooks/useAuth';
 import { DEFAULT_LANDING, readNextParam, sanitizeNext } from '@/lib/auth';
@@ -140,21 +141,28 @@ export default function LoginPage() {
         />
 
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+          <label className="relative flex cursor-pointer select-none items-center text-sm text-[var(--color-text-muted)]">
             <input
               type="checkbox"
               checked={remember}
               onChange={(event) => setRemember(event.target.checked)}
               disabled={submitting}
-              className="h-4 w-4 rounded-[4px] border-[var(--color-border)] accent-[var(--color-accent)]"
+              className="auth-checkbox peer absolute left-0 top-1/2 h-[18px] w-[18px] -translate-y-1/2 cursor-pointer appearance-none rounded-[5px] transition-colors checked:border-[#6366F1] checked:bg-[#6366F1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366F1]/50 focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--color-page)] disabled:cursor-not-allowed disabled:opacity-50"
             />
-            Remember me
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-[3px] top-1/2 -translate-y-1/2 text-white opacity-0 transition-opacity peer-checked:opacity-100"
+            >
+              <Check className="h-3 w-3" strokeWidth={3.5} />
+            </span>
+            <span className="pl-[26px]">Remember me</span>
           </label>
         </div>
 
         <AuthError
           message={formError?.message}
           hint={formError?.hint}
+          onDismiss={() => setFormError(null)}
           action={
             formError?.retry ? (
               <button
@@ -172,14 +180,21 @@ export default function LoginPage() {
         <SubmitButton loading={submitting}>Sign in</SubmitButton>
 
         {status === 'anonymous' && !authRequired ? (
-          <div className="space-y-2 pt-1 text-center">
+          <div className="pt-1">
+            <div aria-hidden="true" className="flex items-center gap-3">
+              <span className="h-px flex-1 bg-[color:color-mix(in_srgb,var(--color-text)_10%,transparent)]" />
+              <span className="text-xs uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+                or
+              </span>
+              <span className="h-px flex-1 bg-[color:color-mix(in_srgb,var(--color-text)_10%,transparent)]" />
+            </div>
             <Link
               href={DEFAULT_LANDING}
-              className="inline-flex w-full items-center justify-center rounded-[8px] border border-[var(--color-border)] px-4 py-2 text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/40"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-[color:color-mix(in_srgb,var(--color-text)_14%,transparent)] bg-[var(--color-surface)] text-sm font-medium text-[var(--color-text)] transition-colors hover:bg-[var(--color-surface-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]/50"
             >
               Continue without signing in
             </Link>
-            <p className="text-xs text-[var(--color-text-muted)]">
+            <p className="mt-2.5 text-center text-xs text-[var(--color-text-muted)]">
               Saved datasets are kept for this browser session only.
             </p>
           </div>

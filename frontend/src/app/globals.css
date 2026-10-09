@@ -376,6 +376,153 @@
 }
 
 /* =========================================================
+   AUTH PAGES (login / register)
+   =========================================================
+   Wrapped in `@layer components` (below the existing layer, so it sorts
+   with the other component styles) so Tailwind utilities can still win
+   where needed — e.g. the checkbox's checked state paints via
+   `checked:bg-[#6366F1]`/`peer-checked:opacity-100` utilities.
+   ========================================================= */
+@layer components {
+
+/* Card entrance: fades in and rises 8px over 300ms, once. The global
+   prefers-reduced-motion rule collapses this to ~0ms, so motion-sensitive
+   users see a plain, static card. */
+@keyframes auth-card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.auth-card-enter {
+  animation: auth-card-in 300ms ease-out both;
+}
+
+/* CSS-only immediate backdrop behind the (code-split) 3D canvas. Rendered in
+   the server layout so there is nothing but CSS on first paint; the canvas
+   fades in over it once ready. */
+.auth-backdrop {
+  background:
+    radial-gradient(1200px 620px at 50% -12%, rgba(99, 102, 241, 0.14), transparent 62%),
+    linear-gradient(180deg, #F3F7FF 0%, #E7EEFC 52%, #DCE5FA 100%);
+}
+.dark .auth-backdrop {
+  background:
+    radial-gradient(1200px 640px at 50% -12%, rgba(99, 102, 241, 0.16), transparent 62%),
+    linear-gradient(180deg, #050B18 0%, #0F1B3A 52%, #1B2450 100%);
+}
+
+/* Faint grid, faded at the edges with a radial mask. */
+.auth-backdrop-grid {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse at 50% 40%, black 22%, transparent 74%);
+  mask-image: radial-gradient(ellipse at 50% 40%, black 22%, transparent 74%);
+}
+.dark .auth-backdrop-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+}
+
+/* Vignette: dims the scene edges so the card area stays calm. */
+.auth-vignette {
+  background: radial-gradient(ellipse at 50% 42%, rgba(255, 255, 255, 0) 42%, rgba(100, 116, 139, 0.3) 100%);
+}
+.dark .auth-vignette {
+  background: radial-gradient(ellipse at 50% 42%, rgba(2, 6, 23, 0) 42%, rgba(2, 6, 23, 0.62) 100%);
+}
+
+/* Soft indigo glow sitting behind the card. */
+.auth-card-glow {
+  background: radial-gradient(closest-side, rgba(99, 102, 241, 0.16), rgba(99, 102, 241, 0.05) 55%, transparent 76%);
+}
+.dark .auth-card-glow {
+  background: radial-gradient(closest-side, rgba(99, 102, 241, 0.28), rgba(99, 102, 241, 0.09) 55%, transparent 76%);
+}
+
+/* The shared card surface: restrained frosted look (semi-opaque, md blur),
+   1px border, layered shadow. */
+.auth-card {
+  background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 1px 2px rgba(2, 6, 23, 0.05),
+    0 12px 28px -12px rgba(2, 6, 23, 0.18),
+    0 32px 64px -24px rgba(2, 6, 23, 0.26);
+  backdrop-filter: blur(8px);
+}
+.dark .auth-card {
+  background: color-mix(in srgb, var(--color-page) 76%, transparent);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 1px 2px rgba(2, 6, 23, 0.4),
+    0 16px 32px -16px rgba(2, 6, 23, 0.6),
+    0 40px 80px -32px rgba(2, 6, 23, 0.72);
+}
+
+/* Shared form-input chrome: visible surface, 1px border, 44px height, 10px
+   radius, indigo focus ring. `--color-border` collides with the dark surface
+   token, so the dark rules mix the text token to keep the border visible. */
+.field-control {
+  width: 100%;
+  height: 2.75rem; /* 44px minimum touch target */
+  border-radius: 0.625rem; /* 10px */
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  padding: 0 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--color-text);
+  caret-color: var(--color-accent);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.field-control::placeholder { color: var(--color-text-muted); opacity: 0.8; }
+.field-control:hover { border-color: color-mix(in srgb, var(--color-text-muted) 40%, var(--color-border)); }
+.field-control:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 26%, transparent);
+}
+.field-control:disabled { opacity: 0.55; cursor: not-allowed; }
+.field-control.invalid { border-color: color-mix(in srgb, var(--color-critical) 55%, var(--color-border)); }
+.field-control.invalid:focus {
+  border-color: var(--color-critical);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-critical) 22%, transparent);
+}
+.dark .field-control {
+  background-color: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  border-color: color-mix(in srgb, var(--color-text) 16%, transparent);
+}
+.dark .field-control:hover { border-color: color-mix(in srgb, var(--color-text) 30%, transparent); }
+
+/* Browser autofill must not paint a white/yellow block over the input surface. */
+.field-control:-webkit-autofill,
+.field-control:-webkit-autofill:hover,
+.field-control:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text);
+  caret-color: var(--color-text);
+  box-shadow: 0 0 0 1000px var(--color-surface) inset;
+  transition: background-color 9999s ease-out;
+}
+.field-with-icon { padding-left: 2.5rem; }
+
+/* "Remember me" custom checkbox — the native input is the styled box. */
+.auth-checkbox {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+.auth-checkbox:hover { border-color: color-mix(in srgb, var(--color-text-muted) 40%, var(--color-border)); }
+.dark .auth-checkbox {
+  background-color: color-mix(in srgb, var(--color-surface) 78%, transparent);
+  border-color: color-mix(in srgb, var(--color-text) 16%, transparent);
+}
+.dark .auth-checkbox:hover { border-color: color-mix(in srgb, var(--color-text) 30%, transparent); }
+
+} /* end @layer components (AUTH PAGES) */
+
+/* =========================================================
    RECHARTS OVERRIDES
    ========================================================= */
 .recharts-wrapper { font-family: inherit; }

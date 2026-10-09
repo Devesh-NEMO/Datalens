@@ -26,7 +26,8 @@
     "react-dom": "19.2.8",
     "react-dropzone": "^20.1.2",
     "recharts": "^3.10.1",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "three": "0.186.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -39,6 +40,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/testing-library__jest-dom": "^5.14.9",
+    "@types/three": "0.186.0",
     "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",

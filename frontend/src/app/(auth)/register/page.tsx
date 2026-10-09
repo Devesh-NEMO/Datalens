@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { CircleAlert, User } from 'lucide-react';
 import {
   AuthCard,
   AuthError,
@@ -138,27 +139,36 @@ export default function RegisterPage() {
         <div>
           <label
             htmlFor="register-name"
-            className="block mb-1.5 text-sm font-medium text-[var(--color-text)]"
+            className="mb-2 block text-sm font-medium text-[var(--color-text)]"
           >
             Display name{' '}
             <span className="font-normal text-[var(--color-text-muted)]">(optional)</span>
           </label>
-          <input
-            id="register-name"
-            name="displayName"
-            type="text"
-            autoComplete="name"
-            maxLength={80}
-            value={displayName}
-            disabled={submitting}
-            onChange={(event) => setDisplayName(event.target.value)}
-            aria-invalid={Boolean(fieldErrors.displayName)}
-            aria-describedby={fieldErrors.displayName ? 'register-name-error' : undefined}
-            className="w-full rounded-[8px] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/40 disabled:opacity-60"
-          />
+          <div className="relative">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+            >
+              <User className="h-4 w-4" />
+            </span>
+            <input
+              id="register-name"
+              name="displayName"
+              type="text"
+              autoComplete="name"
+              maxLength={80}
+              value={displayName}
+              disabled={submitting}
+              onChange={(event) => setDisplayName(event.target.value)}
+              aria-invalid={Boolean(fieldErrors.displayName)}
+              aria-describedby={fieldErrors.displayName ? 'register-name-error' : undefined}
+              className={`field-control field-with-icon ${fieldErrors.displayName ? 'invalid' : ''}`}
+            />
+          </div>
           {fieldErrors.displayName ? (
-            <p id="register-name-error" className="mt-1.5 text-xs text-[var(--color-critical)]">
-              {fieldErrors.displayName}
+            <p id="register-name-error" className="mt-1.5 flex items-start gap-1.5 text-xs leading-relaxed text-[var(--color-critical)]">
+              <CircleAlert aria-hidden="true" className="mt-[2px] h-3.5 w-3.5 shrink-0" />
+              <span>{fieldErrors.displayName}</span>
             </p>
           ) : null}
         </div>
@@ -193,6 +203,7 @@ export default function RegisterPage() {
         <AuthError
           message={formError?.message}
           hint={formError?.hint}
+          onDismiss={() => setFormError(null)}
           action={
             isDuplicate ? (
               <Link
