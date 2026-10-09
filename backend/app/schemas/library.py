@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # --- explorer ------------------------------------------------------------------
 
@@ -326,6 +326,44 @@ class InsightSectionResponse(BaseModel):
     )
 
 
+class FindingResponse(BaseModel):
+    """One structured, evidence-backed finding from the deterministic engine."""
+
+    id: str = Field(description="Stable identifier", examples=["concentration-3fa91c2d"])
+    title: str = Field(description="Short headline", examples=["Value is concentrated in 3 groups"])
+    summary: str = Field(description="Two-to-three-sentence explanation")
+    category: str = Field(
+        description="trend, opportunity, anomaly, concentration, data quality, "
+        "comparison or general observation",
+        examples=["concentration"],
+    )
+    severity: str = Field(description="Severity: high, medium or low", examples=["high"])
+    confidence: float | None = Field(
+        default=None,
+        description="None: figures are exact computations, not estimates",
+    )
+    evidence: list[str] = Field(
+        default_factory=list,
+        description="Exact computed figures backing the finding",
+    )
+    affected_columns: list[str] = Field(
+        default_factory=list,
+        description="Columns the finding concerns, when specific",
+    )
+    affected_entities: list[str] = Field(
+        default_factory=list,
+        description="Groups, products or values the finding concerns",
+    )
+    recommended_action: str = Field(
+        default="",
+        description="A concrete next step that follows from the evidence",
+    )
+    limitations: list[str] = Field(
+        default_factory=list,
+        description="What the finding does not claim",
+    )
+
+
 class InsightsResponse(BaseModel):
     """Every insight section, plus enough provenance for the UI to label them."""
 
@@ -351,6 +389,13 @@ class InsightsResponse(BaseModel):
     grounding: GroundingResponse | None = Field(
         default=None,
         description="How the text was checked against the analysis",
+    )
+    findings: list[FindingResponse] = Field(
+        default_factory=list,
+        description=(
+            "Structured, evidence-backed findings computed from the analysis. "
+            "Models explain these; they never create them."
+        ),
     )
 
 
@@ -452,6 +497,110 @@ class SuggestionResponse(BaseModel):
     )
     intent: str = Field(description="Which question shape it matches", examples=["focus"])
     covers: str = Field(description="One line on what the answer contains")
+
+
+# --- transform (data quality corrections) --------------------------------------
+
+
+_TRANSFORM_OPS = ("standardize_text", "standardize_casing", "drop_duplicates")
+
+
+class TransformOperation(BaseModel):
+    """One validated data-quality operation on a saved dataset.
+
+    Ops touch stored data, so apply requires an explicit ``confirm`` flag and
+    always produces a new analysis entry rather than mutating in place. Source
+    data stays untouched until confirmation.
+    """
+
+    op: Literal["standardize_text", "standardize_casing", "drop_duplicates"] = Field(
+        description="The operation to perform",
+        examples=["standardize_text"],
+    )
+    column: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Target column, required for the text/casing operations",
+        examples=["product"],
+    )
+
+    @field_validator("column")
+    @classmethod
+    def _column_required_for_text_ops(cls, value: str | None, info: Any) -> str | None:
+        op = info.data.get("op")
+        if op in ("standardize_text", "standardize_casing") and not value:
+            raise ValueError(f"'{op}' requires a column.")
+        return value
+
+
+class TransformPreviewRequest(BaseModel):
+    """What a set of operations would change, without touching stored data."""
+
+    operations: list[TransformOperation] = Field(
+        min_length=1,
+        max_length=20,
+        description="Operations to preview, applied in order",
+    )
+
+
+class TransformApplyRequest(TransformPreviewRequest):
+    """Apply confirmed operations and re-run the analysis."""
+
+    confirm: bool = Field(
+        default=True,
+        description="Must be true. Confirmation is what makes the change real.",
+    )
+
+
+# --- conversations -------------------------------------------------------------
+
+
+class CreateConversationRequest(BaseModel):
+    """Start a thread about a saved dataset."""
+
+    title: str | None = Field(
+        default=None,
+        max_length=120,
+        description="Optional title. Defaults to 'New conversation'.",
+    )
+
+
+class PostMessageRequest(BaseModel):
+    """One question inside an existing conversation."""
+
+    question: str = Field(min_length=1, max_length=1000, description="The question")
+
+
+class ConversationSummaryResponse(BaseModel):
+    """One thread, without its messages."""
+
+    id: str = Field(description="Conversation identifier", examples=["9f2c1d"])
+    dataset_id: str = Field(description="The dataset this thread is about")
+    title: str = Field(description="Thread title", examples=["2025 revenue questions"])
+    message_count: int = Field(default=0, description="User + assistant messages saved")
+    created_at: str = Field(description="ISO timestamp of creation")
+    updated_at: str = Field(description="ISO timestamp of last activity")
+
+
+class ConversationMessageResponse(BaseModel):
+    """One saved question or answer."""
+
+    id: str = Field(description="Message identifier", examples=["a3f8"])
+    role: str = Field(description="'user' or 'assistant'", examples=["user"])
+    content: str = Field(description="The message text")
+    meta: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Answer provenance: intent, source, model, fell_back, etc.",
+    )
+    created_at: str = Field(description="ISO timestamp")
+
+
+class ConversationListResponse(BaseModel):
+    """Threads for one dataset."""
+
+    conversations: list[ConversationSummaryResponse] = Field(default_factory=list)
+    total: int = Field(default=0, description="True number of threads")
+    persistence_available: bool = Field(default=True)
 
 
 # --- auth ----------------------------------------------------------------------

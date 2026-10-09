@@ -19,7 +19,6 @@ change cannot make a storage bug look like a routing bug.
 
 from __future__ import annotations
 
-from contextlib import contextmanager
 from pathlib import Path
 
 import pandas as pd
@@ -147,9 +146,10 @@ def test_columns_are_summarised_not_stored_cell_by_cell(
 
 def test_columns_are_real_rows_not_a_json_blob(tmp_database: str, tmp_storage: Path) -> None:
     """Stored as rows so the library can filter on them without a JSON scan."""
+    from sqlalchemy import select
+
     from app.db.models import DatasetColumn
     from app.db.session import session_scope
-    from sqlalchemy import select
 
     saved = save(tmp_storage, rows=20)
     with session_scope() as session:

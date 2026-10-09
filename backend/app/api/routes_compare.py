@@ -22,6 +22,7 @@ from app.core.errors import AppException
 from app.schemas.library import CompareRequest
 from app.services import library
 from app.services.compare import compare_analyses
+from app.services.compare_explainer import explain_comparison
 from app.services.pipeline import analyze_bytes
 
 logger = logging.getLogger("data_analyzer.api.compare")
@@ -80,6 +81,7 @@ async def compare_datasets(
         **result.to_dict(),
         "baseline": _side(baseline),
         "comparison": _side(comparison),
+        "explanation": explain_comparison(result.to_dict()),
     }
 
 
@@ -138,6 +140,7 @@ async def compare_with_upload(
             "dataset_kind": incoming.response.dataset_kind.kind,
             "latest_period": incoming.response.growth.latest_period,
         },
+        "explanation": explain_comparison(result.to_dict()),
     }
 
 

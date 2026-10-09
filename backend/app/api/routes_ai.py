@@ -21,18 +21,16 @@ from __future__ import annotations
 import logging
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Body, Depends, File, Form, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Body, Depends, File, Form, UploadFile
 
 from app.api.deps import AuthContext, require_auth
 from app.core.errors import AppException
-from app.schemas.analysis import AnalysisResponse
 from app.schemas.library import (
     AskPayloadRequest,
     AskRequest,
     AskResponse,
-    InsightsResponse,
     InsightsPayloadRequest,
+    InsightsResponse,
     SuggestionResponse,
 )
 from app.services import ai as ai_service
@@ -137,11 +135,15 @@ async def insights_from_payload(
     body: InsightsPayloadRequest | None = Body(default=None),
     auth: AuthContext = Depends(require_auth),
 ) -> InsightsResponse:
-    payload = body or InsightsPayloadRequest()
-    result = await ai_service.generate_insights(
-        await _payload_for_inline(payload)
-    )
-    return result
+    payload = body.analysis if body is not None else None
+    if not payload:
+        raise AppException(
+            message="No analysis was supplied.",
+            code="ai_no_context",
+            hint="Analyse a file first, then pass its analysis payload back here.",
+            status_code=400,
+        )
+    return await ai_service.generate_insights(payload)
 
 
 @router.post(
@@ -237,11 +239,16 @@ async def ask_inline(
 )
 async def ask_payload(
     body: AskPayloadRequest,
-    analysis: AnalysisResponse | None = Body(default=None),
     auth: AuthContext = Depends(require_auth),
 ) -> AskResponse:
-    payload = analysis or await _payload_for_inline(body)
-    return await ai_service.ask(payload, body.question, history=body.history)
+    if not body.analysis:
+        raise AppException(
+            message="No analysis was supplied.",
+            code="ai_no_context",
+            hint="Analyse a file first, then pass its analysis payload back here.",
+            status_code=400,
+        )
+    return await ai_service.ask(body.analysis, body.question, history=body.history)
 
 
 @router.post(
@@ -272,20 +279,21 @@ def _saved_payload(dataset_id: str, auth: AuthContext, *, action: str) -> dict[s
         info = library.library_status()
         if not info.available:
             raise library.PersistenceUnavailableError(info.reason)
-        raise Exception(f"Cannot {action} that dataset.")
+        raise AppException(
+            message=f"Cannot {action} that dataset.",
+            code="dataset_not_found",
+            hint="It may have been deleted, or it belongs to another account.",
+            status_code=404,
+        )
     payload = detail.get("analysis")
     if not payload:
-        raise Exception(f"The analysis for '{detail.get('name', 'this dataset')}' is not available.")
+        raise AppException(
+            message=f"The analysis for '{detail.get('name', 'this dataset')}' is not available.",
+            code="analysis_unavailable",
+            hint="Re-analyse the dataset, then try again.",
+            status_code=409,
+        )
     return payload
-
-
-async def _payload_for_inline(request: Any) -> Any:
-    """Build an analysis from column choices when no payload was supplied.
-
-    Only reachable when a caller posts JSON with no analysis attached. It has no
-    file to read, so it is answered honestly rather than by inventing data.
-    """
-    raise Exception("No analysis was supplied.")
 
 
 __all__ = ["router"]

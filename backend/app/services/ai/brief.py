@@ -19,6 +19,7 @@ is also what keeps the request cheap.
 from __future__ import annotations
 
 import math
+import re
 from typing import Any
 
 from app.services import recommendations as rec
@@ -508,3 +509,102 @@ def brief_to_json(brief: dict[str, Any]) -> str:
     import json
 
     return json.dumps(brief, indent=2, ensure_ascii=False, default=str)
+
+
+# ---------------------------------------------------------------------------
+# Number grounding — the check that stops a model from inventing a figure.
+# ---------------------------------------------------------------------------
+
+#: A very small integer may legitimately appear in prose that is not a figure at
+#: all (list numbering, "in 3 of the 5 groups", a count of bullet points).
+_SMALL_INT_MAX = 12
+
+#: Bare four-digit years are allowed even when the brief only carries them inside
+#: a period key ("2025-12"), because a month label legitimately becomes prose.
+_YEAR_MIN, _YEAR_MAX = 1900, 2100
+
+_NUMBER_TOKEN_RE = re.compile(r"\d[\d,]*(?:\.\d+)?")
+
+
+def _numeric_token_value(token: str) -> float | None:
+    """Parse a digit token like ``1,234.5`` into a float, or None."""
+    cleaned = token.replace(",", "")
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
+
+
+def _collect_numbers(value: Any, into: list[float], seen: set[str]) -> None:
+    """Walk the brief depth-first and collect every numeric leaf once.
+
+    ``seen`` keys the rounded value so a figure appearing in several sections
+    (total value, growth, chart hints) is counted once and the grounding rule is
+    not easier to satisfy than it looks.
+    """
+    if isinstance(value, dict):
+        for item in value.values():
+            _collect_numbers(item, into, seen)
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            _collect_numbers(item, into, seen)
+    elif isinstance(value, bool):
+        return
+    elif isinstance(value, (int, float)):
+        _remember_number(float(value), into, seen)
+    elif isinstance(value, str):
+        for match in _NUMBER_TOKEN_RE.finditer(value):
+            parsed = _numeric_token_value(match.group())
+            if parsed is not None:
+                _remember_number(parsed, into, seen)
+
+
+def _remember_number(value: float, into: list[float], seen: set[str]) -> None:
+    if not math.isfinite(value):
+        return
+    key = f"{round(value, 4):.4f}"
+    if key not in seen:
+        seen.add(key)
+        into.append(round(value, 4))
+
+
+def _brief_numbers(brief: dict[str, Any]) -> list[float]:
+    """Every distinct figure in the fact sheet, for the grounding check.
+
+    Exported: the orchestration layer passes this list to :func:`_numbers_agrees`
+    so text produced by a model can be checked against exactly what the analysis
+    computed.
+    """
+    collected: list[float] = []
+    _collect_numbers(brief, collected, set())
+    return collected
+
+
+def _numbers_agrees(brief_numbers: list[float], text: str) -> tuple[bool, list[str]]:
+    """Check every number in ``text`` against the brief's figures.
+
+    Returns ``(ok, offending)``. A number in the text is allowed when it matches
+    a brief figure within a small tolerance, or when it is a small integer or a
+    bare calendar year — those are the only shapes that are never figures here.
+    Anything else (an invented total, a doubled share, a wrong delta) fails.
+    """
+    allowed = list(brief_numbers)
+    offending: list[str] = []
+
+    for match in _NUMBER_TOKEN_RE.finditer(text):
+        raw = match.group()
+        value = _numeric_token_value(raw)
+        if value is None:
+            continue  # unreachable with this regex, kept defensive
+        if value <= _SMALL_INT_MAX and value == int(value):
+            continue
+        if _YEAR_MIN <= value <= _YEAR_MAX and value == int(value):
+            continue
+        tolerance = max(0.05, abs(value) * 0.02)
+        for figure in allowed:
+            if abs(value - figure) <= tolerance:
+                break
+        else:
+            offending.append(raw)
+
+    return not offending, offending

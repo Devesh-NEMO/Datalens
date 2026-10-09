@@ -14,8 +14,10 @@ from app.api import (
     routes_ai,
     routes_auth,
     routes_compare,
+    routes_conversations,
     routes_datasets,
     routes_explore,
+    routes_transforms,
 )
 
 #: Unversioned surface, kept for the existing frontend and any curl habit.
@@ -30,6 +32,8 @@ _MODULES = (
     routes_datasets,  # library / history
     routes_explore,  # data explorer
     routes_compare,  # dataset comparison
+    routes_conversations,  # question threads
+    routes_transforms,  # confirmed data-quality corrections
     routes_ai,  # insights, ask, provider status
     routes_auth,  # registration, sessions
 )

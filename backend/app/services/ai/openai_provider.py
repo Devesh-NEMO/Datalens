@@ -18,6 +18,7 @@ Security notes that are not optional:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from typing import Any
@@ -36,6 +37,18 @@ logger = logging.getLogger("data_analyzer.ai.openai")
 #: Never log or return a response body larger than this. A gateway error page is
 #: megabytes and tells the user nothing a short hint does not.
 _MAX_ERROR_FRAGMENT = 400
+
+#: Bounded retries for transient failures only — timeouts, rate limits and
+#: upstream 5xx. Everything else (bad auth, wrong endpoint, unreachable host)
+#: fails immediately because retrying cannot fix it.
+_MAX_RETRIES = 2
+
+#: Seconds to sleep between attempts. Kept tiny: these are rescues, not a load
+#: test, and the request timeout still bounds total wall time.
+_RETRY_BACKOFF = (0.5, 1.5)
+
+#: Error codes the retry loop considers transient.
+_TRANSIENT_CODES = {"ai_timeout", "ai_rate_limited", "ai_upstream_error"}
 
 
 def redact_secrets(text: str, *secrets: str | None) -> str:
@@ -99,7 +112,25 @@ class OpenAICompatibleProvider:
         return bool(self._api_key.strip() and self._base_url.strip() and self.model.strip())
 
     async def complete(self, request: AIRequest) -> AIResponse:
-        """POST the conversation and return the first choice's text."""
+        """POST the conversation, retrying brief transient failures."""
+        attempts = _MAX_RETRIES + 1
+        last_error: AIProviderError | None = None
+        for attempt in range(attempts):
+            try:
+                return await self._attempt(request)
+            except AIProviderError as exc:
+                if exc.code in _TRANSIENT_CODES and attempt < _MAX_RETRIES:
+                    last_error = exc
+                    await asyncio.sleep(_RETRY_BACKOFF[attempt])
+                    continue
+                raise
+
+        # Unreachable: the loop either returns or raises.
+        assert last_error is not None  # noqa: S101 - defensive; loop exits on raise
+        raise last_error
+
+    async def _attempt(self, request: AIRequest) -> AIResponse:
+        """One raw POST to the chat-completions endpoint."""
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": [

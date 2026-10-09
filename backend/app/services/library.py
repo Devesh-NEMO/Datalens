@@ -318,6 +318,22 @@ def _latest_analysis(session: Session, dataset_id: str) -> Analysis | None:
     )
 
 
+def _find_owned_dataset(
+    session: Any, dataset_id: str, user_id: str | None
+) -> Dataset | None:
+    """A dataset scoped to its owner. ``None`` when missing *or* not yours.
+
+    Ownership is enforced on every read path, not just writes, so one account
+    cannot open another account's dataset by guessing an id. In single-user
+    deployments (auth off) everything is owned by the local user and nothing
+    changes.
+    """
+    query = select(Dataset).where(Dataset.id == dataset_id)
+    if user_id:
+        query = query.where(Dataset.user_id == user_id)
+    return session.scalar(query)
+
+
 def get_dataset(dataset_id: str, *, user_id: str | None = None) -> dict[str, Any] | None:
     """One library entry with its cached analysis, or None when absent."""
     status = library_status()
@@ -325,7 +341,7 @@ def get_dataset(dataset_id: str, *, user_id: str | None = None) -> dict[str, Any
         return None
     try:
         with session_scope() as session:
-            dataset = session.get(Dataset, dataset_id)
+            dataset = _find_owned_dataset(session, dataset_id, user_id)
             if dataset is None:
                 return None
             return _detail_from(dataset, session, _latest_analysis(session, dataset_id))
@@ -348,6 +364,8 @@ def list_datasets(
     try:
         with session_scope() as session:
             query = select(Dataset).order_by(Dataset.created_at.desc(), Dataset.id)
+            if user_id:
+                query = query.where(Dataset.user_id == user_id)
             term = " ".join(str(search or "").split())
             if term:
                 # The LIKE wildcards are escaped by hand. SQLAlchemy's
@@ -404,7 +422,7 @@ def rename_dataset(dataset_id: str, name: str, *, user_id: str | None = None) ->
 
     cleaned = _clean_name(name, "Dataset")
     with session_scope() as session:
-        dataset = session.get(Dataset, dataset_id)
+        dataset = _find_owned_dataset(session, dataset_id, user_id)
         if dataset is None:
             raise _not_found(dataset_id)
         dataset.name = cleaned
@@ -432,7 +450,7 @@ def reanalyze_dataset(
         raise PersistenceUnavailableError(status.reason)
 
     with session_scope() as session:
-        dataset = session.get(Dataset, dataset_id)
+        dataset = _find_owned_dataset(session, dataset_id, user_id)
         if dataset is None:
             raise _not_found(dataset_id)
 
@@ -473,6 +491,33 @@ def reanalyze_dataset(
         return detail
 
 
+def store_analysis(
+    dataset_id: str,
+    result: Any,
+    *,
+    user_id: str | None = None,
+) -> dict[str, Any]:
+    """Persist a freshly-run analysis over an existing saved dataset.
+
+    Used by the transformation workflow when a confirmed change is applied: the
+    same engine runs over the transformed file, the analysis history gains a new
+    entry, and the dataset's headline figures follow the new result.
+    """
+    status = library_status()
+    if not status.available:
+        raise PersistenceUnavailableError(status.reason)
+    with session_scope() as session:
+        dataset = _find_owned_dataset(session, dataset_id, user_id)
+        if dataset is None:
+            raise _not_found(dataset_id)
+        _apply_counts(dataset, result)
+        _write_analysis(session, dataset, result, user_id=user_id or dataset.user_id)
+        session.flush()
+        detail = _detail_from(dataset, session, _latest_analysis(session, dataset_id))
+        detail["reanalyzed"] = True
+        return detail
+
+
 def delete_dataset(dataset_id: str, *, user_id: str | None = None) -> dict[str, Any]:
     """Remove a dataset and its stored bytes.
 
@@ -486,7 +531,7 @@ def delete_dataset(dataset_id: str, *, user_id: str | None = None) -> dict[str, 
 
     removed_bytes = False
     with session_scope() as session:
-        dataset = session.get(Dataset, dataset_id)
+        dataset = _find_owned_dataset(session, dataset_id, user_id)
         if dataset is None:
             raise _not_found(dataset_id)
         key = dataset.storage_key
@@ -509,7 +554,7 @@ def read_dataset_file(dataset_id: str, *, user_id: str | None = None) -> tuple[b
     mount, so an upload cannot be fetched by guessing a key.
     """
     with session_scope() as session:
-        dataset = session.get(Dataset, dataset_id)
+        dataset = _find_owned_dataset(session, dataset_id, user_id)
         if dataset is None:
             raise _not_found(dataset_id)
         key = dataset.storage_key

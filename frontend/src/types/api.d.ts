@@ -4,6 +4,646 @@
  */
 
 export interface paths {
+    "/v1/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health Check
+         * @description Returns liveness, the API version, and which optional capabilities (database, storage, AI, auth) are currently available.
+         */
+        get: operations["health_check_v1_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analyze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Analyze a Dataset
+         * @description Upload a tabular file to generate in-memory data profiling, ABC/Pareto ranking, period growth trends, dataset-kind detection, chart recommendations, potential anomalies, classified data-quality findings, and chart-ready JSON.
+         */
+        post: operations["analyze_data_v1_analyze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Saved Datasets
+         * @description Datasets newest first. Returns an empty list with `persistence_available: false` when no database is reachable, so the client can distinguish 'nothing saved' from 'saving is switched off'.
+         */
+        get: operations["list_datasets_v1_datasets_get"];
+        put?: never;
+        /**
+         * Save an Upload as a Dataset
+         * @description Analyses the upload, stores the bytes in the configured storage provider and records the dataset, its column profile and the analysis payload. Returns the full analysis so the caller can render a result page without a second request.
+         */
+        post: operations["save_dataset_v1_datasets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open a Saved Dataset
+         * @description The dataset's cached analysis payload and a capped row preview, so a saved dataset can be re-opened without re-uploading or re-processing the file.
+         */
+        get: operations["get_dataset_v1_datasets__dataset_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a Saved Dataset
+         * @description Removes the dataset, its analyses and its stored bytes. Succeeds even when the bytes were already gone, and reports which of the two happened so the UI can warn about a leftover object.
+         */
+        delete: operations["delete_dataset_v1_datasets__dataset_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Rename a Dataset
+         * @description Changes the display name only. The stored file and its analysis are untouched.
+         */
+        patch: operations["rename_dataset_v1_datasets__dataset_id__patch"];
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/analyze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-analyse a Saved Dataset
+         * @description Re-runs the analysis over the stored bytes, optionally with different column choices. If the stored file is no longer available the last saved analysis is returned with `reanalyzed: false` and an explanation, rather than an error.
+         */
+        post: operations["reanalyze_dataset_v1_datasets__dataset_id__analyze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/analyze-dataset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Analyse a Saved Dataset by Id
+         * @description Analyses a stored dataset without re-uploading it. Distinct from `/datasets/{id}/analyze`, which also records a new analysis run; this one returns the existing payload.
+         */
+        post: operations["analyze_saved_dataset_v1_analyze_dataset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a Saved Dataset's File
+         * @description Returns the original bytes. This is the only route by which stored uploads leave the server: the storage directory is never mounted as static files, so an uploaded CSV cannot be fetched by guessing a key.
+         */
+        get: operations["export_dataset_v1_datasets__dataset_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/explore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Browse Rows of an Upload
+         * @description Uploads a file and returns one page of its rows, with per-column metadata, the distinct values a filter needs, and the counts needed to render a pager. Filtering, sorting and pagination all happen server-side. Send `filters` as a JSON array of {column, operator, value} objects; an unparsable one is reported in `rejected` and ignored.
+         */
+        post: operations["explore_upload_v1_explore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/explore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Browse Rows of a Saved Dataset
+         * @description Pages through a saved dataset with the same filters and sorting as the upload endpoint. The stored file is re-read when it is available, so every row is reachable. If the bytes are gone the stored preview is used instead and the response says the table is a sample rather than silently truncating it.
+         */
+        post: operations["explore_dataset_v1_datasets__dataset_id__explore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Compare Two Saved Datasets
+         * @description Diffs two saved datasets group by group, with absolute and percentage changes and a grew/fell/added/removed/flat classification. When the two cannot be compared the response carries `compatible: false` plus a specific reason and suggested fix for each one — a comparison that silently subtracted two incompatible numbers would look like an answer.
+         */
+        post: operations["compare_datasets_v1_compare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/compare/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Compare a Saved Dataset with an Upload
+         * @description The same comparison against a freshly uploaded file, for when the second dataset has not been saved. The upload is analysed but not stored.
+         */
+        post: operations["compare_with_upload_v1_compare_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Conversations for a Dataset
+         * @description Threads for a dataset, newest first. Empty when none exist yet.
+         */
+        get: operations["list_conversations_v1_datasets__dataset_id__conversations_get"];
+        put?: never;
+        /**
+         * Start a Conversation About a Dataset
+         * @description Creates an empty thread on a saved dataset. The title defaults to 'New conversation' and is refined from the first question when one is asked.
+         */
+        post: operations["create_conversation_v1_datasets__dataset_id__conversations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open a Conversation
+         * @description One thread with its messages, in chronological order.
+         */
+        get: operations["open_conversation_v1_conversations__conversation_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a Conversation
+         * @description Removes the thread and all of its messages.
+         */
+        delete: operations["delete_conversation_v1_conversations__conversation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/conversations/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question in a Conversation
+         * @description Answers a question in the context of a conversation. The question and answer are saved with full provenance (intent, source, whether a model wrote the answer or it fell back to the checked local analysis).
+         */
+        post: operations["post_message_v1_conversations__conversation_id__messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/transform/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Data-Quality Corrections
+         * @description Applies the requested operations to an in-memory copy of the stored file and reports what would change: affected rows per operation, before/after samples, and row totals. Nothing is written to disk or to the analysis history.
+         */
+        post: operations["preview_transform_v1_datasets__dataset_id__transform_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/transform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply Confirmed Data-Quality Corrections
+         * @description Applies the operations to a copy of the stored file, re-runs the analysis engine over it and saves the result as a new analysis entry. The stored file itself is never modified in place; the change is a new, reproducible analysis version.
+         */
+        post: operations["apply_transform_v1_datasets__dataset_id__transform_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * AI Provider Status
+         * @description Whether a model provider is configured and reachable, with no secret material. The insights and ask pages use this to decide between an answer area and a 'not configured' panel.
+         */
+        get: operations["ai_status_endpoint_v1_ai_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Test the AI Provider
+         * @description Sends a one-word probe to the configured provider and reports latency. Never sends any dataset content, so it is safe to offer as a 'Test connection' button on the settings page.
+         */
+        get: operations["ai_test_connection_v1_ai_test_connection_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Suggested Questions
+         * @description The questions the local analysis engine actually answers, with the intent each one matches. Generated from the engine rather than hardcoded in the frontend, so the suggestions cannot drift away from what can be answered.
+         */
+        get: operations["ai_suggestions_v1_ai_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Insights for an Upload
+         * @description Seven written sections over an uploaded file. With a provider configured each section is explained by the model; without one, Datalens' own computed text is returned and labelled as such. Sections the data cannot support come back with `available: false` rather than an empty panel.
+         */
+        post: operations["insights_inline_v1_ai_insights_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/insights/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Insights from a JSON Request
+         * @description The same as `/ai/insights`, but takes the analysis payload as JSON instead of the file. The frontend already has the payload from `/analyze`, so this avoids sending the file twice.
+         */
+        post: operations["insights_from_payload_v1_ai_insights_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Insights for a Saved Dataset
+         * @description Insights for a stored dataset, computed from its saved analysis. No file is re-read and nothing is sent anywhere except the configured AI provider.
+         */
+        post: operations["insights_for_dataset_v1_datasets__dataset_id__insights_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * One-Paragraph Dataset Summary
+         * @description A short overview for the dashboard header, from the same grounded brief.
+         */
+        post: operations["summary_inline_v1_ai_summary_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question About an Upload
+         * @description Answers one question about an uploaded file. The provider sees aggregate facts only — never individual rows. Without a provider configured the deterministic engine answers, and `intent_matched` says whether it understood the question.
+         */
+        post: operations["ask_inline_v1_ai_ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ai/ask/payload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question About a Supplied Analysis
+         * @description Answers a question about an analysis the caller already holds, as JSON. Used by the frontend so the file is sent once, to `/analyze`, and never again.
+         */
+        post: operations["ask_payload_v1_ai_ask_payload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question About a Saved Dataset
+         * @description Answers a question about a stored dataset from its saved analysis. This is the route the 'Ask Datalens' page uses once a dataset is saved.
+         */
+        post: operations["ask_dataset_v1_datasets__dataset_id__ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who Am I
+         * @description Reports whether the current request is authenticated. Safe to call with no token, which is how the sign-in page decides whether to show itself.
+         */
+        get: operations["session_status_v1_auth_session_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an Account
+         * @description Registers an account and returns a session token. Requires a reachable database; with `DATABASE_ENABLED=false` there is nowhere to store the account and the request fails with an explanation.
+         */
+        post: operations["register_v1_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign In
+         * @description Exchanges credentials for a session token. The same message is returned for an unknown email and a wrong password, so this cannot be used to discover which addresses are registered.
+         */
+        post: operations["login_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Out
+         * @description Stateless: sessions are signed tokens with no server-side record, so there is nothing to revoke server-side and the client discards the token. The endpoint exists so a client has one place to hang future revocation logic.
+         */
+        post: operations["logout_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The Signed-In User
+         * @description Requires a valid token.
+         */
+        get: operations["me_v1_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -13,7 +653,7 @@ export interface paths {
         };
         /**
          * Health Check
-         * @description Returns the health status and current version of the API.
+         * @description Returns liveness, the API version, and which optional capabilities (database, storage, AI, auth) are currently available.
          */
         get: operations["health_check_health_get"];
         put?: never;
@@ -34,10 +674,610 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Analyze Sales & Product Data
-         * @description Upload a CSV or Excel file to generate in-memory data profiling, ABC/Pareto product ranking, period growth trends, and chart-ready JSON.
+         * Analyze a Dataset
+         * @description Upload a tabular file to generate in-memory data profiling, ABC/Pareto ranking, period growth trends, dataset-kind detection, chart recommendations, potential anomalies, classified data-quality findings, and chart-ready JSON.
          */
         post: operations["analyze_data_analyze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Saved Datasets
+         * @description Datasets newest first. Returns an empty list with `persistence_available: false` when no database is reachable, so the client can distinguish 'nothing saved' from 'saving is switched off'.
+         */
+        get: operations["list_datasets_datasets_get"];
+        put?: never;
+        /**
+         * Save an Upload as a Dataset
+         * @description Analyses the upload, stores the bytes in the configured storage provider and records the dataset, its column profile and the analysis payload. Returns the full analysis so the caller can render a result page without a second request.
+         */
+        post: operations["save_dataset_datasets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open a Saved Dataset
+         * @description The dataset's cached analysis payload and a capped row preview, so a saved dataset can be re-opened without re-uploading or re-processing the file.
+         */
+        get: operations["get_dataset_datasets__dataset_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a Saved Dataset
+         * @description Removes the dataset, its analyses and its stored bytes. Succeeds even when the bytes were already gone, and reports which of the two happened so the UI can warn about a leftover object.
+         */
+        delete: operations["delete_dataset_datasets__dataset_id__delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Rename a Dataset
+         * @description Changes the display name only. The stored file and its analysis are untouched.
+         */
+        patch: operations["rename_dataset_datasets__dataset_id__patch"];
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/analyze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-analyse a Saved Dataset
+         * @description Re-runs the analysis over the stored bytes, optionally with different column choices. If the stored file is no longer available the last saved analysis is returned with `reanalyzed: false` and an explanation, rather than an error.
+         */
+        post: operations["reanalyze_dataset_datasets__dataset_id__analyze_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/analyze-dataset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Analyse a Saved Dataset by Id
+         * @description Analyses a stored dataset without re-uploading it. Distinct from `/datasets/{id}/analyze`, which also records a new analysis run; this one returns the existing payload.
+         */
+        post: operations["analyze_saved_dataset_analyze_dataset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a Saved Dataset's File
+         * @description Returns the original bytes. This is the only route by which stored uploads leave the server: the storage directory is never mounted as static files, so an uploaded CSV cannot be fetched by guessing a key.
+         */
+        get: operations["export_dataset_datasets__dataset_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/explore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Browse Rows of an Upload
+         * @description Uploads a file and returns one page of its rows, with per-column metadata, the distinct values a filter needs, and the counts needed to render a pager. Filtering, sorting and pagination all happen server-side. Send `filters` as a JSON array of {column, operator, value} objects; an unparsable one is reported in `rejected` and ignored.
+         */
+        post: operations["explore_upload_explore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/explore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Browse Rows of a Saved Dataset
+         * @description Pages through a saved dataset with the same filters and sorting as the upload endpoint. The stored file is re-read when it is available, so every row is reachable. If the bytes are gone the stored preview is used instead and the response says the table is a sample rather than silently truncating it.
+         */
+        post: operations["explore_dataset_datasets__dataset_id__explore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Compare Two Saved Datasets
+         * @description Diffs two saved datasets group by group, with absolute and percentage changes and a grew/fell/added/removed/flat classification. When the two cannot be compared the response carries `compatible: false` plus a specific reason and suggested fix for each one — a comparison that silently subtracted two incompatible numbers would look like an answer.
+         */
+        post: operations["compare_datasets_compare_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/compare/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Compare a Saved Dataset with an Upload
+         * @description The same comparison against a freshly uploaded file, for when the second dataset has not been saved. The upload is analysed but not stored.
+         */
+        post: operations["compare_with_upload_compare_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Conversations for a Dataset
+         * @description Threads for a dataset, newest first. Empty when none exist yet.
+         */
+        get: operations["list_conversations_datasets__dataset_id__conversations_get"];
+        put?: never;
+        /**
+         * Start a Conversation About a Dataset
+         * @description Creates an empty thread on a saved dataset. The title defaults to 'New conversation' and is refined from the first question when one is asked.
+         */
+        post: operations["create_conversation_datasets__dataset_id__conversations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conversations/{conversation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open a Conversation
+         * @description One thread with its messages, in chronological order.
+         */
+        get: operations["open_conversation_conversations__conversation_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete a Conversation
+         * @description Removes the thread and all of its messages.
+         */
+        delete: operations["delete_conversation_conversations__conversation_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conversations/{conversation_id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question in a Conversation
+         * @description Answers a question in the context of a conversation. The question and answer are saved with full provenance (intent, source, whether a model wrote the answer or it fell back to the checked local analysis).
+         */
+        post: operations["post_message_conversations__conversation_id__messages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/transform/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Data-Quality Corrections
+         * @description Applies the requested operations to an in-memory copy of the stored file and reports what would change: affected rows per operation, before/after samples, and row totals. Nothing is written to disk or to the analysis history.
+         */
+        post: operations["preview_transform_datasets__dataset_id__transform_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/transform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply Confirmed Data-Quality Corrections
+         * @description Applies the operations to a copy of the stored file, re-runs the analysis engine over it and saves the result as a new analysis entry. The stored file itself is never modified in place; the change is a new, reproducible analysis version.
+         */
+        post: operations["apply_transform_datasets__dataset_id__transform_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * AI Provider Status
+         * @description Whether a model provider is configured and reachable, with no secret material. The insights and ask pages use this to decide between an answer area and a 'not configured' panel.
+         */
+        get: operations["ai_status_endpoint_ai_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/test-connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Test the AI Provider
+         * @description Sends a one-word probe to the configured provider and reports latency. Never sends any dataset content, so it is safe to offer as a 'Test connection' button on the settings page.
+         */
+        get: operations["ai_test_connection_ai_test_connection_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Suggested Questions
+         * @description The questions the local analysis engine actually answers, with the intent each one matches. Generated from the engine rather than hardcoded in the frontend, so the suggestions cannot drift away from what can be answered.
+         */
+        get: operations["ai_suggestions_ai_suggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Insights for an Upload
+         * @description Seven written sections over an uploaded file. With a provider configured each section is explained by the model; without one, Datalens' own computed text is returned and labelled as such. Sections the data cannot support come back with `available: false` rather than an empty panel.
+         */
+        post: operations["insights_inline_ai_insights_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/insights/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Insights from a JSON Request
+         * @description The same as `/ai/insights`, but takes the analysis payload as JSON instead of the file. The frontend already has the payload from `/analyze`, so this avoids sending the file twice.
+         */
+        post: operations["insights_from_payload_ai_insights_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/insights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate Insights for a Saved Dataset
+         * @description Insights for a stored dataset, computed from its saved analysis. No file is re-read and nothing is sent anywhere except the configured AI provider.
+         */
+        post: operations["insights_for_dataset_datasets__dataset_id__insights_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * One-Paragraph Dataset Summary
+         * @description A short overview for the dashboard header, from the same grounded brief.
+         */
+        post: operations["summary_inline_ai_summary_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question About an Upload
+         * @description Answers one question about an uploaded file. The provider sees aggregate facts only — never individual rows. Without a provider configured the deterministic engine answers, and `intent_matched` says whether it understood the question.
+         */
+        post: operations["ask_inline_ai_ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/ask/payload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question About a Supplied Analysis
+         * @description Answers a question about an analysis the caller already holds, as JSON. Used by the frontend so the file is sent once, to `/analyze`, and never again.
+         */
+        post: operations["ask_payload_ai_ask_payload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/datasets/{dataset_id}/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask a Question About a Saved Dataset
+         * @description Answers a question about a stored dataset from its saved analysis. This is the route the 'Ask Datalens' page uses once a dataset is saved.
+         */
+        post: operations["ask_dataset_datasets__dataset_id__ask_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who Am I
+         * @description Reports whether the current request is authenticated. Safe to call with no token, which is how the sign-in page decides whether to show itself.
+         */
+        get: operations["session_status_auth_session_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an Account
+         * @description Registers an account and returns a session token. Requires a reachable database; with `DATABASE_ENABLED=false` there is nowhere to store the account and the request fails with an explanation.
+         */
+        post: operations["register_auth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign In
+         * @description Exchanges credentials for a session token. The same message is returned for an unknown email and a wrong password, so this cannot be used to discover which addresses are registered.
+         */
+        post: operations["login_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Out
+         * @description Stateless: sessions are signed tokens with no server-side record, so there is nothing to revoke server-side and the client discards the token. The endpoint exists so a client has one place to hang future revocation logic.
+         */
+        post: operations["logout_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The Signed-In User
+         * @description Requires a valid token.
+         */
+        get: operations["me_auth_me_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -159,11 +1399,295 @@ export interface components {
             growth: components["schemas"]["GrowthResponse"];
             /** @description Chart-ready structured JSON data */
             charts: components["schemas"]["ChartsResponse"];
+            /** @description What kind of dataset this is, inferred from its column names */
+            dataset_kind?: components["schemas"]["DatasetKindResponse"];
+            /** @description Deterministic potential-anomaly scan */
+            anomalies?: components["schemas"]["AnomalySummaryResponse"];
+            /** @description Which columns can be used for grouping, measuring and time */
+            shape?: components["schemas"]["ShapeResponse"];
+            /**
+             * Columns
+             * @description Per-column role assignment used to build the recommendations
+             */
+            columns?: components["schemas"]["ColumnRoleResponse"][];
             /**
              * Warnings
              * @description Warnings and informational notices
              */
             warnings?: string[];
+        };
+        /**
+         * AnalyzeDatasetRequest
+         * @description Analyse a stored dataset by id, without re-uploading the file.
+         */
+        AnalyzeDatasetRequest: {
+            /**
+             * Dataset Id
+             * @description Dataset to analyse
+             */
+            dataset_id: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Top N
+             * @description Top/bottom N
+             */
+            top_n?: number | null;
+        };
+        /**
+         * AnomalyResponse
+         * @description One potential anomaly.
+         *
+         *     Named "potential" deliberately: the check compares numbers and cannot
+         *     establish that a record is wrong.
+         */
+        AnomalyResponse: {
+            /**
+             * Column
+             * @description Column the anomaly sits in
+             * @example revenue
+             */
+            column: string;
+            /**
+             * Value
+             * @description The value itself, formatted
+             * @example 1,250,000
+             */
+            value: string;
+            /**
+             * Reason
+             * @description Why this value was flagged, with the figures behind the comparison
+             */
+            reason: string;
+            /**
+             * Severity
+             * @description Severity: 'high', 'medium' or 'low'
+             * @example medium
+             */
+            severity: string;
+            /**
+             * Method
+             * @description Detection method: 'iqr', 'zscore', 'missing_spike' or 'growth'
+             * @example iqr
+             */
+            method: string;
+            /**
+             * Distance
+             * @description How far outside the normal range, in IQR widths or standard deviations
+             * @example 2.4
+             */
+            distance?: number | null;
+            /**
+             * Occurrences
+             * @description Rows carrying this value. Distinct values are reported once, so a value repeating 40 times is one finding rather than 40.
+             * @default 1
+             * @example 1
+             */
+            occurrences: number;
+        };
+        /**
+         * AnomalySummaryResponse
+         * @description The anomaly scan as a whole, including why it may have been skipped.
+         */
+        AnomalySummaryResponse: {
+            /**
+             * Detected
+             * @description False when the scan could not run meaningfully for this dataset
+             * @example true
+             */
+            detected: boolean;
+            /**
+             * Count
+             * @description Total potential anomalies found
+             * @example 7
+             */
+            count: number;
+            /**
+             * Items
+             * @description Flagged anomalies, most severe first, bounded in number
+             */
+            items?: components["schemas"]["AnomalyResponse"][];
+            /**
+             * Notes
+             * @description Scope notes: sampling, skipped columns, truncation
+             */
+            notes?: string[];
+            /**
+             * Rows Scanned
+             * @description Rows actually analysed, which may be fewer than the dataset's rows
+             * @default 0
+             * @example 614
+             */
+            rows_scanned: number;
+            /**
+             * Sampled
+             * @description True when a large frame was sampled deterministically
+             * @default false
+             * @example false
+             */
+            sampled: boolean;
+        };
+        /**
+         * AskPayloadRequest
+         * @description A question about an analysis the caller already holds.
+         *
+         *     The analysis is embedded in the body rather than passed as a second body
+         *     parameter: a request has one body, so this is the only shape that both
+         *     validates and documents itself.
+         */
+        AskPayloadRequest: {
+            /**
+             * Question
+             * @description The question
+             */
+            question: string;
+            /**
+             * Analysis
+             * @description The analysis payload from POST /analyze or from a saved dataset
+             */
+            analysis: {
+                [key: string]: unknown;
+            };
+            /**
+             * History
+             * @description Prior exchanges
+             */
+            history?: {
+                [key: string]: string;
+            }[];
+        };
+        /**
+         * AskRequest
+         * @description One question about one dataset.
+         */
+        AskRequest: {
+            /**
+             * Dataset Id
+             * @description Saved dataset to answer about. Omit when using an inline analysis.
+             */
+            dataset_id?: string | null;
+            /**
+             * Question
+             * @description The question
+             */
+            question: string;
+            /**
+             * History
+             * @description Prior exchanges, bounded server-side
+             */
+            history?: {
+                [key: string]: string;
+            }[];
+        };
+        /**
+         * AskResponse
+         * @description One answer to one question.
+         */
+        AskResponse: {
+            /**
+             * Question
+             * @description The question as understood
+             * @example What changed?
+             */
+            question: string;
+            /**
+             * Answer
+             * @description The answer text
+             */
+            answer: string;
+            /**
+             * Source
+             * @description Where the answer came from: ai or local
+             * @example local
+             */
+            source: string;
+            /**
+             * Provider
+             * @description Provider name
+             * @example local
+             */
+            provider: string;
+            /**
+             * Model
+             * @description Model name, or 'local-analysis'
+             * @example local-analysis
+             */
+            model: string;
+            /**
+             * Is Ai
+             * @description True when a model provider wrote the answer
+             */
+            is_ai: boolean;
+            /**
+             * Fell Back
+             * @description True when the provider failed
+             * @default false
+             */
+            fell_back: boolean;
+            /**
+             * Fallback Reason
+             * @description Why it fell back
+             */
+            fallback_reason?: string | null;
+            /**
+             * Disclaimer
+             * @description Shown alongside local answers
+             */
+            disclaimer: string;
+            /**
+             * Intent
+             * @description Matched intent, or 'unknown'
+             * @example trend
+             */
+            intent: string;
+            /**
+             * Intent Matched
+             * @description Whether the intent was recognised
+             */
+            intent_matched: boolean;
+            /**
+             * Status
+             * @description Provider status, without secrets
+             */
+            status: {
+                [key: string]: unknown;
+            };
+            /**
+             * Suggestions
+             * @description Questions this engine can actually answer
+             */
+            suggestions?: string[];
+        };
+        /**
+         * AuthResponse
+         * @description A session token plus the user it belongs to.
+         */
+        AuthResponse: {
+            /**
+             * Token
+             * @description Session token. Send as 'Authorization: Bearer <token>'
+             */
+            token: string;
+            /**
+             * Expires At
+             * @description ISO timestamp when the token stops working
+             */
+            expires_at: string;
+            /** @description The authenticated user */
+            user: components["schemas"]["UserResponse"];
         };
         /** Body_analyze_data_analyze_post */
         Body_analyze_data_analyze_post: {
@@ -195,9 +1719,624 @@ export interface components {
             top_n: number;
             /**
              * Sheet Name
-             * @description Optional specific sheet name for Excel workbooks
+             * @description Optional specific sheet name for Excel/ODS workbooks
              */
             sheet_name?: string | null;
+            /**
+             * Table
+             * @description Optional table name for SQLite databases
+             */
+            table?: string | null;
+        };
+        /** Body_analyze_data_v1_analyze_post */
+        Body_analyze_data_v1_analyze_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Optional override column name for product/item entity
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Optional override column name for metric/revenue
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Optional override column name for date/timestamp
+             */
+            date_column?: string | null;
+            /**
+             * Top N
+             * @description Number of top and bottom ranked products (1 to 50)
+             * @default 10
+             */
+            top_n: number;
+            /**
+             * Sheet Name
+             * @description Optional specific sheet name for Excel/ODS workbooks
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description Optional table name for SQLite databases
+             */
+            table?: string | null;
+        };
+        /** Body_ask_inline_ai_ask_post */
+        Body_ask_inline_ai_ask_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Question
+             * @description The question
+             */
+            question: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /** Body_ask_inline_v1_ai_ask_post */
+        Body_ask_inline_v1_ai_ask_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Question
+             * @description The question
+             */
+            question: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /** Body_compare_with_upload_compare_upload_post */
+        Body_compare_with_upload_compare_upload_post: {
+            /**
+             * Baseline Id
+             * @description Saved dataset to compare against
+             */
+            baseline_id: string;
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+            /**
+             * Limit
+             * @description Maximum groups to return in the ranked list
+             */
+            limit?: number | null;
+        };
+        /** Body_compare_with_upload_v1_compare_upload_post */
+        Body_compare_with_upload_v1_compare_upload_post: {
+            /**
+             * Baseline Id
+             * @description Saved dataset to compare against
+             */
+            baseline_id: string;
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+            /**
+             * Limit
+             * @description Maximum groups to return in the ranked list
+             */
+            limit?: number | null;
+        };
+        /** Body_explore_upload_explore_post */
+        Body_explore_upload_explore_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Optional override column name for the product/item entity
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Optional override column name for the metric/revenue
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Optional override column name for the date/timestamp
+             */
+            date_column?: string | null;
+            /**
+             * Page
+             * @description 1-based page number
+             * @default 1
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description Rows per page, capped at 200
+             */
+            page_size?: number | null;
+            /**
+             * Sort
+             * @description Column to sort by
+             */
+            sort?: string | null;
+            /**
+             * Direction
+             * @description Sort direction: 'asc' or 'desc'
+             * @default asc
+             */
+            direction: string;
+            /**
+             * Search
+             * @description Case-insensitive substring
+             */
+            search?: string | null;
+            /**
+             * Search Columns
+             * @description JSON array of columns to search. Defaults to every text column
+             */
+            search_columns?: string | null;
+            /**
+             * Filters
+             * @description JSON array of {"column", "operator", "value"} objects
+             */
+            filters?: string | null;
+            /**
+             * Sheet Name
+             * @description Optional specific sheet name for Excel/ODS workbooks
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description Optional table name for SQLite databases
+             */
+            table?: string | null;
+        };
+        /** Body_explore_upload_v1_explore_post */
+        Body_explore_upload_v1_explore_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Optional override column name for the product/item entity
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Optional override column name for the metric/revenue
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Optional override column name for the date/timestamp
+             */
+            date_column?: string | null;
+            /**
+             * Page
+             * @description 1-based page number
+             * @default 1
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description Rows per page, capped at 200
+             */
+            page_size?: number | null;
+            /**
+             * Sort
+             * @description Column to sort by
+             */
+            sort?: string | null;
+            /**
+             * Direction
+             * @description Sort direction: 'asc' or 'desc'
+             * @default asc
+             */
+            direction: string;
+            /**
+             * Search
+             * @description Case-insensitive substring
+             */
+            search?: string | null;
+            /**
+             * Search Columns
+             * @description JSON array of columns to search. Defaults to every text column
+             */
+            search_columns?: string | null;
+            /**
+             * Filters
+             * @description JSON array of {"column", "operator", "value"} objects
+             */
+            filters?: string | null;
+            /**
+             * Sheet Name
+             * @description Optional specific sheet name for Excel/ODS workbooks
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description Optional table name for SQLite databases
+             */
+            table?: string | null;
+        };
+        /** Body_insights_inline_ai_insights_post */
+        Body_insights_inline_ai_insights_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /** Body_insights_inline_v1_ai_insights_post */
+        Body_insights_inline_v1_ai_insights_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /** Body_save_dataset_datasets_post */
+        Body_save_dataset_datasets_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Name
+             * @description Display name for the dataset
+             */
+            name: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /** Body_save_dataset_v1_datasets_post */
+        Body_save_dataset_v1_datasets_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Name
+             * @description Display name for the dataset
+             */
+            name: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /** Body_summary_inline_ai_summary_post */
+        Body_summary_inline_ai_summary_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /** Body_summary_inline_v1_ai_summary_post */
+        Body_summary_inline_v1_ai_summary_post: {
+            /**
+             * File
+             * @description CSV (.csv) or Excel (.xlsx, .xls) file
+             */
+            file: string;
+            /**
+             * Product Column
+             * @description Grouping column override
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column override
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column override
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description SQLite table to read
+             */
+            table?: string | null;
+        };
+        /**
+         * ChartRecommendationResponse
+         * @description A suggested chart plus the reason it suits this dataset.
+         */
+        ChartRecommendationResponse: {
+            /**
+             * Chart Type
+             * @description Chart type key
+             * @example bar
+             * @example horizontal_bar
+             * @example line
+             * @example area
+             * @example pie
+             * @example donut
+             * @example histogram
+             * @example scatter
+             * @example pareto
+             * @example stacked_bar
+             * @example table
+             */
+            chart_type: string;
+            /**
+             * Title
+             * @description Suggested chart title
+             * @example Revenue by region
+             */
+            title: string;
+            /**
+             * Reason
+             * @description Why this chart suits the columns present
+             * @example 'region' has 5 distinct values, which reads better side-on.
+             */
+            reason: string;
+            /**
+             * Category Column
+             * @description Column supplying categories or x values
+             */
+            category_column?: string | null;
+            /**
+             * Measure Column
+             * @description Column supplying the numbers
+             */
+            measure_column?: string | null;
+            /**
+             * Second Category Column
+             * @description Second category column, for stacked charts
+             */
+            second_category_column?: string | null;
+            /**
+             * Priority
+             * @description Sort order, lower first
+             * @default 50
+             * @example 10
+             */
+            priority: number;
+            /**
+             * Caveat
+             * @description Note when the chart is a weaker fit for this data
+             */
+            caveat?: string | null;
         };
         /**
          * ChartsResponse
@@ -229,6 +2368,16 @@ export interface components {
              * @description 10-bucket distribution histogram of the value metric
              */
             value_histogram: components["schemas"]["HistogramBucketResponse"][];
+            /**
+             * Segments
+             * @description Breakdowns of the measure by every groupable column, so a chart can be offered for region, category or channel without per-dataset code
+             */
+            segments?: components["schemas"]["SegmentResponse"][];
+            /**
+             * Recommendations
+             * @description Chart types suited to this dataset, each with the reason why
+             */
+            recommendations?: components["schemas"]["ChartRecommendationResponse"][];
         };
         /**
          * CleaningReportResponse
@@ -392,6 +2541,70 @@ export interface components {
             top_values?: components["schemas"]["ValueCountResponse"][] | null;
         };
         /**
+         * ColumnRoleResponse
+         * @description How Datalens can use one column.
+         */
+        ColumnRoleResponse: {
+            /**
+             * Name
+             * @description Column name
+             * @example region
+             */
+            name: string;
+            /**
+             * Role
+             * @description One of: numeric, date, text, boolean, constant, identifier
+             * @example text
+             */
+            role: string;
+            /**
+             * Dtype
+             * @description pandas dtype as a string
+             * @example object
+             */
+            dtype: string;
+            /**
+             * Non Null
+             * @description Rows with a value
+             * @example 600
+             */
+            non_null: number;
+            /**
+             * Unique
+             * @description Distinct values
+             * @example 5
+             */
+            unique: number;
+            /**
+             * Missing Percent
+             * @description Percentage of rows with no value
+             * @example 0
+             */
+            missing_percent: number;
+            /**
+             * Numeric
+             * @description True when the column holds numbers
+             */
+            numeric: boolean;
+            /**
+             * Datetime
+             * @description True when the column holds dates
+             */
+            datetime: boolean;
+            /**
+             * Categorical
+             * @description True when the column can group rows
+             */
+            categorical: boolean;
+            /**
+             * Longest Label
+             * @description Longest label in characters
+             * @default 0
+             * @example 13
+             */
+            longest_label: number;
+        };
+        /**
          * ColumnSelectionResponse
          * @description Identified entity, metric, and time columns with alternatives.
          */
@@ -461,6 +2674,282 @@ export interface components {
             notes?: string[];
         };
         /**
+         * CompareRequest
+         * @description Compare two stored datasets.
+         */
+        CompareRequest: {
+            /**
+             * Baseline Id
+             * @description Dataset to compare against
+             */
+            baseline_id: string;
+            /**
+             * Comparison Id
+             * @description Dataset to compare
+             */
+            comparison_id: string;
+            /**
+             * Limit
+             * @description Maximum groups to return in the ranked list
+             */
+            limit?: number | null;
+        };
+        /**
+         * CreateConversationRequest
+         * @description Start a thread about a saved dataset.
+         */
+        CreateConversationRequest: {
+            /**
+             * Title
+             * @description Optional title. Defaults to 'New conversation'.
+             */
+            title?: string | null;
+        };
+        /**
+         * DatasetColumnSummary
+         * @description One column of a stored dataset.
+         */
+        DatasetColumnSummary: {
+            /**
+             * Name
+             * @description Column name
+             * @example revenue
+             */
+            name: string;
+            /**
+             * Position
+             * @description Column order
+             * @example 7
+             */
+            position: number;
+            /**
+             * Detected Type
+             * @description Inferred type
+             * @example float64
+             */
+            detected_type: string;
+            /**
+             * Missing Percent
+             * @description Percentage of empty rows
+             * @default 0
+             */
+            missing_percent: number;
+            /**
+             * Unique Count
+             * @description Distinct values
+             * @default 0
+             */
+            unique_count: number;
+        };
+        /**
+         * DatasetDetailResponse
+         * @description A library entry with the stored analysis and preview.
+         */
+        DatasetDetailResponse: {
+            /**
+             * Id
+             * @description Stable dataset identifier
+             * @example ds_7f3a
+             */
+            id: string;
+            /**
+             * Name
+             * @description Dataset name
+             * @example December sales
+             */
+            name: string;
+            /**
+             * Original Filename
+             * @description Uploaded filename
+             * @example sales_dec.csv
+             */
+            original_filename: string;
+            /**
+             * Created At
+             * @description ISO timestamp of upload
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * @description ISO timestamp of the last change
+             */
+            updated_at: string;
+            /**
+             * Status
+             * @description ready or failed
+             * @example ready
+             */
+            status: string;
+            /**
+             * Status Detail
+             * @description Why the dataset is in its current state
+             */
+            status_detail?: string | null;
+            /**
+             * Row Count
+             * @description Rows analysed
+             * @default 0
+             * @example 614
+             */
+            row_count: number;
+            /**
+             * Column Count
+             * @description Columns analysed
+             * @default 0
+             * @example 8
+             */
+            column_count: number;
+            /**
+             * Total Value
+             * @description Total of the measure column, cached for the library list
+             */
+            total_value?: number | null;
+            /**
+             * Quality Score
+             * @description Data quality score, cached for the library list
+             */
+            quality_score?: number | null;
+            /**
+             * Dataset Kind
+             * @description Recognised dataset kind
+             * @example sales
+             */
+            dataset_kind?: string | null;
+            /**
+             * Product Column
+             * @description Grouping column used
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column used
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column used
+             */
+            date_column?: string | null;
+            /**
+             * Storage Bytes
+             * @description Size of the stored file
+             */
+            storage_bytes?: number | null;
+            /**
+             * Columns
+             * @description Per-column summary captured at upload
+             */
+            columns?: components["schemas"]["DatasetColumnSummary"][];
+            /**
+             * Analysis
+             * @description The full analysis payload as computed at upload
+             */
+            analysis?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Preview Rows
+             * @description A stored sample of rows, in column order
+             */
+            preview_rows?: unknown[] | null;
+            /**
+             * Preview Total Rows
+             * @description Rows in the dataset, which may exceed the stored preview
+             * @default 0
+             */
+            preview_total_rows: number;
+            /**
+             * Preview Truncated
+             * @description True when more rows exist than were previewed
+             * @default false
+             */
+            preview_truncated: boolean;
+            /**
+             * Reanalyzed
+             * @description False when the cached analysis was returned without re-reading the file
+             * @default true
+             */
+            reanalyzed: boolean;
+            /**
+             * Note
+             * @description An explanation to show the reader, when something was degraded
+             */
+            note?: string | null;
+        };
+        /**
+         * DatasetKindResponse
+         * @description What Datalens believes the dataset is about.
+         *
+         *     Read from column names, never assumed. It drives the wording of the
+         *     executive summary and which breakdowns are offered, so a file of marketing
+         *     spend is described as marketing spend rather than as sales.
+         */
+        DatasetKindResponse: {
+            /**
+             * Kind
+             * @description Machine-readable dataset kind
+             * @example sales
+             * @example marketing
+             * @example finance
+             * @example inventory
+             * @example hr
+             * @example customer
+             * @example generic
+             */
+            kind: string;
+            /**
+             * Label
+             * @description Human-readable label for the kind
+             * @example Sales / transactions
+             */
+            label: string;
+            /**
+             * Meaning
+             * @description One sentence explaining how the analysis interprets this kind of file
+             * @example Rows are individual transactions. Products are ranked by the value column and compared period over period.
+             */
+            meaning: string;
+            /**
+             * Matched Keywords
+             * @description Column-name keywords that led to this classification
+             */
+            matched_keywords?: string[];
+            /**
+             * Confident
+             * @description False when the file has no distinguishing column names and the generic reading was used
+             * @default false
+             */
+            confident: boolean;
+        };
+        /**
+         * DatasetListResponse
+         * @description The library page.
+         */
+        DatasetListResponse: {
+            /**
+             * Datasets
+             * @description Saved datasets, newest first
+             */
+            datasets?: components["schemas"]["DatasetSummaryResponse"][];
+            /**
+             * Total
+             * @description How many datasets exist
+             * @default 0
+             */
+            total: number;
+            /**
+             * Persistence Available
+             * @description Whether saving works at all
+             * @default true
+             */
+            persistence_available: boolean;
+            /**
+             * Unavailable Reason
+             * @description Why saving is unavailable, when it is
+             */
+            unavailable_reason?: string | null;
+        };
+        /**
          * DatasetProfileResponse
          * @description Comprehensive dataset summary and per-column profile.
          */
@@ -500,6 +2989,427 @@ export interface components {
              * @description Profiles for every column in the dataset
              */
             columns: components["schemas"]["ColumnProfileResponse"][];
+        };
+        /**
+         * DatasetSummaryResponse
+         * @description A row in the library list.
+         */
+        DatasetSummaryResponse: {
+            /**
+             * Id
+             * @description Stable dataset identifier
+             * @example ds_7f3a
+             */
+            id: string;
+            /**
+             * Name
+             * @description Dataset name
+             * @example December sales
+             */
+            name: string;
+            /**
+             * Original Filename
+             * @description Uploaded filename
+             * @example sales_dec.csv
+             */
+            original_filename: string;
+            /**
+             * Created At
+             * @description ISO timestamp of upload
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * @description ISO timestamp of the last change
+             */
+            updated_at: string;
+            /**
+             * Status
+             * @description ready or failed
+             * @example ready
+             */
+            status: string;
+            /**
+             * Status Detail
+             * @description Why the dataset is in its current state
+             */
+            status_detail?: string | null;
+            /**
+             * Row Count
+             * @description Rows analysed
+             * @default 0
+             * @example 614
+             */
+            row_count: number;
+            /**
+             * Column Count
+             * @description Columns analysed
+             * @default 0
+             * @example 8
+             */
+            column_count: number;
+            /**
+             * Total Value
+             * @description Total of the measure column, cached for the library list
+             */
+            total_value?: number | null;
+            /**
+             * Quality Score
+             * @description Data quality score, cached for the library list
+             */
+            quality_score?: number | null;
+            /**
+             * Dataset Kind
+             * @description Recognised dataset kind
+             * @example sales
+             */
+            dataset_kind?: string | null;
+            /**
+             * Product Column
+             * @description Grouping column used
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Measure column used
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column used
+             */
+            date_column?: string | null;
+            /**
+             * Storage Bytes
+             * @description Size of the stored file
+             */
+            storage_bytes?: number | null;
+        };
+        /**
+         * ExploreFilterRequest
+         * @description One filter condition.
+         *
+         *     Operators are a fixed enum rather than free text, so a filter string can
+         *     never be interpreted as an expression.
+         */
+        ExploreFilterRequest: {
+            /**
+             * Column
+             * @description Column to filter on
+             * @example region
+             */
+            column: string;
+            /**
+             * Operator
+             * @description One of: eq, ne, gt, gte, lt, lte, contains, not_contains, starts_with, ends_with, is_empty, is_not_empty
+             * @example eq
+             */
+            operator: string;
+            /**
+             * Value
+             * @description Value to compare against. Ignored for is_empty / is_not_empty
+             * @example North America
+             */
+            value?: unknown | null;
+        };
+        /**
+         * ExploreRequest
+         * @description A page request against an uploaded file.
+         */
+        ExploreRequest: {
+            /**
+             * Product Column
+             * @description Grouping column used for ranking
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description Numeric column used for measures
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description Date column used for trends
+             */
+            date_column?: string | null;
+            /**
+             * Sheet Name
+             * @description Excel sheet to read
+             */
+            sheet_name?: string | null;
+            /**
+             * Table
+             * @description Database table to read
+             */
+            table?: string | null;
+            /**
+             * Page
+             * @description 1-based page number
+             * @default 1
+             * @example 1
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description Rows per page
+             */
+            page_size?: number | null;
+            /**
+             * Sort
+             * @description Column to sort by
+             * @example revenue
+             */
+            sort?: string | null;
+            /**
+             * Direction
+             * @description Sort direction: 'asc' or 'desc'
+             * @default asc
+             */
+            direction: string;
+            /**
+             * Search
+             * @description Case-insensitive substring to search for
+             */
+            search?: string | null;
+            /**
+             * Search Columns
+             * @description Columns to search. Defaults to every text column
+             */
+            search_columns?: string[] | null;
+            /**
+             * Filters
+             * @description Conditions combined with AND
+             */
+            filters?: components["schemas"]["ExploreFilterRequest"][];
+        };
+        /**
+         * ExploreResponse
+         * @description One page of rows plus everything needed to render the table around them.
+         */
+        ExploreResponse: {
+            /**
+             * Columns
+             * @description Columns in display order
+             */
+            columns: components["schemas"]["ExplorerColumnResponse"][];
+            /**
+             * Rows
+             * @description Row values, in column order
+             * @example [
+             *       1,
+             *       "2025-01-15",
+             *       "MacBook Pro 16",
+             *       12499
+             *     ]
+             */
+            rows: unknown[][];
+            /**
+             * Total Rows
+             * @description Rows matching the filters
+             * @example 614
+             */
+            total_rows: number;
+            /**
+             * Page
+             * @description Page returned, 1-based
+             * @example 1
+             */
+            page: number;
+            /**
+             * Page Size
+             * @description Rows per page actually used
+             * @example 100
+             */
+            page_size: number;
+            /**
+             * Page Count
+             * @description Total pages
+             * @example 7
+             */
+            page_count: number;
+            /**
+             * Sort Column
+             * @description Column currently sorted
+             */
+            sort_column?: string | null;
+            /**
+             * Sort Direction
+             * @description Current sort direction
+             * @example asc
+             */
+            sort_direction: string;
+            /**
+             * Search
+             * @description Active search term
+             * @default
+             */
+            search: string;
+            /**
+             * Search Columns
+             * @description Columns the term was matched against, so the UI can show the scope
+             */
+            search_columns?: string[];
+            /**
+             * Filters
+             * @description Filters that were applied, echoed back
+             */
+            filters?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Filtered Out
+             * @description Rows hidden by the filters, so the UI can say '12 of 614 rows'
+             * @default 0
+             */
+            filtered_out: number;
+            /**
+             * Distinct Values
+             * @description Filter dropdown values per column
+             */
+            distinct_values?: {
+                [key: string]: unknown[];
+            };
+            /**
+             * Rejected
+             * @description Sort/filter expressions that were ignored, with the reason
+             */
+            rejected?: string[];
+        };
+        /**
+         * ExplorerColumnResponse
+         * @description A column as the explorer table header needs it.
+         */
+        ExplorerColumnResponse: {
+            /**
+             * Name
+             * @description Column name
+             * @example revenue
+             */
+            name: string;
+            /**
+             * Dtype
+             * @description pandas dtype as a string
+             * @example float64
+             */
+            dtype: string;
+            /**
+             * Kind
+             * @description One of: numeric, date, text — drives formatting and filter operators
+             * @example numeric
+             */
+            kind: string;
+            /**
+             * Missing Count
+             * @description Rows with no value
+             * @example 16
+             */
+            missing_count: number;
+            /**
+             * Distinct Count
+             * @description Distinct values
+             * @example 132
+             */
+            distinct_count: number;
+            /**
+             * Min
+             * @description Smallest numeric value
+             */
+            min?: number | null;
+            /**
+             * Max
+             * @description Largest numeric value
+             */
+            max?: number | null;
+            /**
+             * Distinct Values
+             * @description Values offered in the filter dropdown, when few enough to list
+             */
+            distinct_values?: unknown[];
+        };
+        /**
+         * FindingResponse
+         * @description One structured, evidence-backed finding from the deterministic engine.
+         */
+        FindingResponse: {
+            /**
+             * Id
+             * @description Stable identifier
+             * @example concentration-3fa91c2d
+             */
+            id: string;
+            /**
+             * Title
+             * @description Short headline
+             * @example Value is concentrated in 3 groups
+             */
+            title: string;
+            /**
+             * Summary
+             * @description Two-to-three-sentence explanation
+             */
+            summary: string;
+            /**
+             * Category
+             * @description trend, opportunity, anomaly, concentration, data quality, comparison or general observation
+             * @example concentration
+             */
+            category: string;
+            /**
+             * Severity
+             * @description Severity: high, medium or low
+             * @example high
+             */
+            severity: string;
+            /**
+             * Confidence
+             * @description None: figures are exact computations, not estimates
+             */
+            confidence?: number | null;
+            /**
+             * Evidence
+             * @description Exact computed figures backing the finding
+             */
+            evidence?: string[];
+            /**
+             * Affected Columns
+             * @description Columns the finding concerns, when specific
+             */
+            affected_columns?: string[];
+            /**
+             * Affected Entities
+             * @description Groups, products or values the finding concerns
+             */
+            affected_entities?: string[];
+            /**
+             * Recommended Action
+             * @description A concrete next step that follows from the evidence
+             * @default
+             */
+            recommended_action: string;
+            /**
+             * Limitations
+             * @description What the finding does not claim
+             */
+            limitations?: string[];
+        };
+        /**
+         * GroundingResponse
+         * @description How the generated text was checked against the computed analysis.
+         */
+        GroundingResponse: {
+            /**
+             * Figure Count
+             * @description Distinct figures in the fact sheet the writer was allowed to use
+             * @default 0
+             * @example 48
+             */
+            figure_count: number;
+            /**
+             * Rule
+             * @description What was enforced, in words the UI can show
+             * @example Every number in the text above was checked against the computed analysis and rejected if it did not appear there.
+             */
+            rule: string;
         };
         /**
          * GrowthResponse
@@ -569,6 +3479,150 @@ export interface components {
              * @example 450
              */
             count: number;
+        };
+        /**
+         * InsightSectionResponse
+         * @description One written section.
+         */
+        InsightSectionResponse: {
+            /**
+             * Key
+             * @description Stable section identifier
+             * @example executive
+             */
+            key: string;
+            /**
+             * Title
+             * @description Section heading
+             * @example Executive summary
+             */
+            title: string;
+            /**
+             * Body
+             * @description The section text
+             * @example Total value reached ...
+             */
+            body: string;
+            /**
+             * Available
+             * @description Whether this dataset supports the section
+             */
+            available: boolean;
+            /**
+             * Source
+             * @description Source of the text: ai, local or none
+             * @example local
+             */
+            source: string;
+            /**
+             * Bullets
+             * @description Supporting points
+             */
+            bullets?: string[];
+            /**
+             * Fell Back
+             * @description True when the provider failed and the computed text was used instead
+             * @default false
+             */
+            fell_back: boolean;
+            /**
+             * Fallback Reason
+             * @description Why the provider's wording was not used, when it was not
+             */
+            fallback_reason?: string | null;
+        };
+        /**
+         * InsightsPayloadRequest
+         * @description Insights for an analysis the caller already holds.
+         *
+         *     ``analysis`` is a plain dict rather than ``AnalysisResponse`` so a payload
+         *     round-tripped through the frontend's stored JSON validates even if a field
+         *     the AI layer does not read is missing. The brief builder is defensive about
+         *     exactly that, and requiring the full schema here would reject input the rest
+         *     of the pipeline handles without complaint.
+         */
+        InsightsPayloadRequest: {
+            /**
+             * Analysis
+             * @description The analysis payload from POST /analyze or from a saved dataset
+             */
+            analysis: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * InsightsResponse
+         * @description Every insight section, plus enough provenance for the UI to label them.
+         */
+        InsightsResponse: {
+            /**
+             * Provider
+             * @description Provider name
+             * @example local
+             */
+            provider: string;
+            /**
+             * Model
+             * @description Model name, or 'local-analysis'
+             * @example local-analysis
+             */
+            model: string;
+            /**
+             * Is Ai
+             * @description True when a model provider wrote the text
+             */
+            is_ai: boolean;
+            /**
+             * Fell Back
+             * @description True when a configured provider failed and computed text was used
+             * @default false
+             */
+            fell_back: boolean;
+            /**
+             * Fallback Reason
+             * @description Why the provider's wording was discarded, when it was
+             */
+            fallback_reason?: string | null;
+            /**
+             * Disclaimer
+             * @description Shown alongside local text
+             */
+            disclaimer: string;
+            /**
+             * Status
+             * @description Provider status, without secrets
+             */
+            status: {
+                [key: string]: unknown;
+            };
+            /**
+             * Sections
+             * @description The written sections, in display order
+             */
+            sections?: components["schemas"]["InsightSectionResponse"][];
+            /** @description How the text was checked against the analysis */
+            grounding?: components["schemas"]["GroundingResponse"] | null;
+            /**
+             * Findings
+             * @description Structured, evidence-backed findings computed from the analysis. Models explain these; they never create them.
+             */
+            findings?: components["schemas"]["FindingResponse"][];
+        };
+        /**
+         * LoginRequest
+         * @description Exchange credentials for a session token.
+         */
+        LoginRequest: {
+            /**
+             * Email
+             * @description Email address
+             */
+            email: string;
+            /**
+             * Password
+             * @description Password
+             */
+            password: string;
         };
         /**
          * MetaResponse
@@ -653,6 +3707,17 @@ export interface components {
              * @example 35.5
              */
             cumulative_pct: number;
+        };
+        /**
+         * PostMessageRequest
+         * @description One question inside an existing conversation.
+         */
+        PostMessageRequest: {
+            /**
+             * Question
+             * @description The question
+             */
+            question: string;
         };
         /**
          * ProductGrowthItemResponse
@@ -745,6 +3810,59 @@ export interface components {
             abc_class: string;
         };
         /**
+         * QualityIssueResponse
+         * @description One classified data-quality finding.
+         */
+        QualityIssueResponse: {
+            /**
+             * Id
+             * @description Stable identifier for this finding
+             * @example empty_rows
+             */
+            id: string;
+            /**
+             * Severity
+             * @description Severity: 'critical', 'warning' or 'info'
+             * @example warning
+             */
+            severity: string;
+            /**
+             * Title
+             * @description Short headline for the finding
+             * @example 5 completely empty rows removed
+             */
+            title: string;
+            /**
+             * What Happened
+             * @description Plain-language description of the problem
+             */
+            what_happened: string;
+            /**
+             * Count
+             * @description Number of rows, cells or columns affected. 0 when not countable
+             * @example 5
+             */
+            count: number;
+            /**
+             * Action Taken
+             * @description What Datalens did about it
+             * @example Removed 5 empty rows.
+             */
+            action_taken: string;
+            /**
+             * Recommendation
+             * @description What a person may still want to do
+             */
+            recommendation: string;
+            /**
+             * Category
+             * @description Grouping key: completeness, validity, uniqueness, structure, analysis or summary
+             * @default general
+             * @example completeness
+             */
+            category: string;
+        };
+        /**
          * QualityScoreResponse
          * @description Overall dataset data quality evaluation score.
          */
@@ -779,6 +3897,30 @@ export interface components {
              * @example Dataset demonstrates high completeness and integrity.
              */
             description: string;
+            /**
+             * Issues
+             * @description Classified findings for the Data Quality Center: what happened, how many, what Datalens did, and what to check. Ordered most severe first.
+             */
+            issues?: components["schemas"]["QualityIssueResponse"][];
+            /**
+             * Critical Count
+             * @description Number of issues marked critical
+             * @default 0
+             * @example 0
+             */
+            critical_count: number;
+            /**
+             * Warning Count
+             * @description Number of issues marked warning
+             * @default 0
+             */
+            warning_count: number;
+            /**
+             * Info Count
+             * @description Number of issues marked info
+             * @default 0
+             */
+            info_count: number;
         };
         /**
          * RankingResponse
@@ -840,6 +3982,237 @@ export interface components {
             negative_value_products_count: number;
         };
         /**
+         * ReanalyzeDatasetRequest
+         * @description Re-run the analysis with different column choices.
+         */
+        ReanalyzeDatasetRequest: {
+            /**
+             * Product Column
+             * @description New grouping column
+             */
+            product_column?: string | null;
+            /**
+             * Value Column
+             * @description New measure column
+             */
+            value_column?: string | null;
+            /**
+             * Date Column
+             * @description New date column
+             */
+            date_column?: string | null;
+            /**
+             * Top N
+             * @description Top/bottom N
+             */
+            top_n?: number | null;
+        };
+        /**
+         * RegisterRequest
+         * @description Create an account.
+         */
+        RegisterRequest: {
+            /**
+             * Email
+             * @description Email address
+             */
+            email: string;
+            /**
+             * Password
+             * @description Password. 8 characters minimum; length beats symbols.
+             */
+            password: string;
+            /**
+             * Display Name
+             * @description Shown in the UI
+             */
+            display_name?: string | null;
+        };
+        /**
+         * RenameDatasetRequest
+         * @description Change a dataset's display name.
+         */
+        RenameDatasetRequest: {
+            /**
+             * Name
+             * @description New name
+             */
+            name: string;
+        };
+        /**
+         * SegmentItemResponse
+         * @description One group within a breakdown.
+         */
+        SegmentItemResponse: {
+            /**
+             * Label
+             * @description Group value
+             * @example North America
+             */
+            label: string;
+            /**
+             * Value
+             * @description Measure summed for this group
+             * @example 412000
+             */
+            value: number;
+            /**
+             * Count
+             * @description Rows in this group
+             * @example 148
+             */
+            count: number;
+            /**
+             * Share Pct
+             * @description Share of the segment total
+             * @example 26.4
+             */
+            share_pct: number;
+        };
+        /**
+         * SegmentResponse
+         * @description Totals for one groupable column, summed by one measure.
+         */
+        SegmentResponse: {
+            /**
+             * Column
+             * @description Column that was grouped by
+             * @example region
+             */
+            column: string;
+            /**
+             * Measure
+             * @description Measure that was summed
+             * @example revenue
+             */
+            measure: string;
+            /**
+             * Total
+             * @description Sum of the measure across all groups
+             * @example 1560000
+             */
+            total: number;
+            /**
+             * Row Count
+             * @description Rows included in the breakdown
+             * @example 600
+             */
+            row_count: number;
+            /**
+             * Items
+             * @description Groups, largest first
+             */
+            items?: components["schemas"]["SegmentItemResponse"][];
+            /**
+             * Truncated
+             * @description True when only the largest groups are listed and the rest grouped as Other
+             * @default false
+             */
+            truncated: boolean;
+            /**
+             * Groups Total
+             * @description Distinct values in the column
+             * @default 0
+             * @example 5
+             */
+            groups_total: number;
+        };
+        /**
+         * SessionResponse
+         * @description Whether the current request is authenticated, and as whom.
+         */
+        SessionResponse: {
+            /**
+             * Authenticated
+             * @description True when a valid token was presented
+             */
+            authenticated: boolean;
+            /** @description The user, when authenticated */
+            user?: components["schemas"]["UserResponse"] | null;
+            /**
+             * Auth Required
+             * @description True when requests without a token are rejected
+             * @default false
+             */
+            auth_required: boolean;
+            /**
+             * Message
+             * @description Explanation of the current auth state
+             */
+            message: string;
+        };
+        /**
+         * ShapeResponse
+         * @description A compact description of what the file contains.
+         *
+         *     Every field defaults, so an empty ``ShapeResponse()`` is a valid
+         *     placeholder for a response built before this block existed.
+         */
+        ShapeResponse: {
+            /**
+             * Row Count
+             * @description Rows analysed
+             * @default 0
+             * @example 614
+             */
+            row_count: number;
+            /**
+             * Column Count
+             * @description Columns analysed
+             * @default 0
+             * @example 8
+             */
+            column_count: number;
+            /**
+             * Categorical Columns
+             * @description Groupable columns
+             */
+            categorical_columns?: string[];
+            /**
+             * Numeric Columns
+             * @description Numeric columns
+             */
+            numeric_columns?: string[];
+            /**
+             * Date Columns
+             * @description Date columns
+             */
+            date_columns?: string[];
+            /**
+             * Constant Columns
+             * @description Columns with a single distinct value
+             */
+            constant_columns?: string[];
+            /**
+             * Identifier Columns
+             * @description Columns that look like row identifiers rather than groupings
+             */
+            identifier_columns?: string[];
+        };
+        /**
+         * SuggestionResponse
+         * @description A starter question and what it returns.
+         */
+        SuggestionResponse: {
+            /**
+             * Question
+             * @description The question
+             * @example Which products should I focus on?
+             */
+            question: string;
+            /**
+             * Intent
+             * @description Which question shape it matches
+             * @example focus
+             */
+            intent: string;
+            /**
+             * Covers
+             * @description One line on what the answer contains
+             */
+            covers: string;
+        };
+        /**
          * TopProductBarItemResponse
          * @description Top product chart data item.
          */
@@ -856,6 +4229,85 @@ export interface components {
              * @example 450000
              */
             value: number;
+        };
+        /**
+         * TransformApplyRequest
+         * @description Apply confirmed operations and re-run the analysis.
+         */
+        TransformApplyRequest: {
+            /**
+             * Operations
+             * @description Operations to preview, applied in order
+             */
+            operations: components["schemas"]["TransformOperation"][];
+            /**
+             * Confirm
+             * @description Must be true. Confirmation is what makes the change real.
+             * @default true
+             */
+            confirm: boolean;
+        };
+        /**
+         * TransformOperation
+         * @description One validated data-quality operation on a saved dataset.
+         *
+         *     Ops touch stored data, so apply requires an explicit ``confirm`` flag and
+         *     always produces a new analysis entry rather than mutating in place. Source
+         *     data stays untouched until confirmation.
+         */
+        TransformOperation: {
+            /**
+             * Op
+             * @description The operation to perform
+             * @example standardize_text
+             * @enum {string}
+             */
+            op: "standardize_text" | "standardize_casing" | "drop_duplicates";
+            /**
+             * Column
+             * @description Target column, required for the text/casing operations
+             * @example product
+             */
+            column?: string | null;
+        };
+        /**
+         * TransformPreviewRequest
+         * @description What a set of operations would change, without touching stored data.
+         */
+        TransformPreviewRequest: {
+            /**
+             * Operations
+             * @description Operations to preview, applied in order
+             */
+            operations: components["schemas"]["TransformOperation"][];
+        };
+        /**
+         * UserResponse
+         * @description The signed-in user.
+         */
+        UserResponse: {
+            /**
+             * Id
+             * @description User identifier
+             * @example u_2b19
+             */
+            id: string;
+            /**
+             * Email
+             * @description Email address
+             * @example analyst@example.com
+             */
+            email: string;
+            /**
+             * Display Name
+             * @description Display name
+             */
+            display_name?: string | null;
+            /**
+             * Created At
+             * @description ISO timestamp of registration
+             */
+            created_at: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -897,6 +4349,1186 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    health_check_v1_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    analyze_data_v1_analyze_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_analyze_data_v1_analyze_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalysisResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_datasets_v1_datasets_get: {
+        parameters: {
+            query?: {
+                /** @description Filter by dataset or file name */
+                search?: string | null;
+                /** @description Maximum rows */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_dataset_v1_datasets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_save_dataset_v1_datasets_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dataset_v1_datasets__dataset_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description No dataset with that id */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_dataset_v1_datasets__dataset_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description No dataset with that id */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_dataset_v1_datasets__dataset_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameDatasetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reanalyze_dataset_v1_datasets__dataset_id__analyze_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReanalyzeDatasetRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    analyze_saved_dataset_v1_analyze_dataset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalyzeDatasetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_dataset_v1_datasets__dataset_id__export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The stored file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                    "application/octet-stream": unknown;
+                };
+            };
+            /** @description Dataset or stored file is gone */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explore_upload_v1_explore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_explore_upload_v1_explore_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExploreResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explore_dataset_v1_datasets__dataset_id__explore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ExploreRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExploreResponse"];
+                };
+            };
+            /** @description No dataset with that id */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_datasets_v1_compare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_with_upload_v1_compare_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_compare_with_upload_v1_compare_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversations_v1_datasets__dataset_id__conversations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_conversation_v1_datasets__dataset_id__conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CreateConversationRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    open_conversation_v1_conversations__conversation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_conversation_v1_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_message_v1_conversations__conversation_id__messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_transform_v1_datasets__dataset_id__transform_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransformPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_transform_v1_datasets__dataset_id__transform_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransformApplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_status_endpoint_v1_ai_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    ai_test_connection_v1_ai_test_connection_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    ai_suggestions_v1_ai_suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionResponse"][];
+                };
+            };
+        };
+    };
+    insights_inline_v1_ai_insights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_insights_inline_v1_ai_insights_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    insights_from_payload_v1_ai_insights_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InsightsPayloadRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    insights_for_dataset_v1_datasets__dataset_id__insights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    summary_inline_v1_ai_summary_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_summary_inline_v1_ai_summary_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_inline_v1_ai_ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_ask_inline_v1_ai_ask_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_payload_v1_ai_ask_payload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskPayloadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_dataset_v1_datasets__dataset_id__ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    session_status_v1_auth_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    register_v1_auth_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description No database is available */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    login_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Credentials did not match */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+        };
+    };
+    me_v1_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Not signed in */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     health_check_health_get: {
         parameters: {
             query?: never;
@@ -913,7 +5545,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        [key: string]: string;
+                        [key: string]: unknown;
                     };
                 };
             };
@@ -949,6 +5581,1131 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
+            };
+        };
+    };
+    list_datasets_datasets_get: {
+        parameters: {
+            query?: {
+                /** @description Filter by dataset or file name */
+                search?: string | null;
+                /** @description Maximum rows */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_dataset_datasets_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_save_dataset_datasets_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_dataset_datasets__dataset_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description No dataset with that id */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_dataset_datasets__dataset_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description No dataset with that id */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_dataset_datasets__dataset_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenameDatasetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reanalyze_dataset_datasets__dataset_id__analyze_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ReanalyzeDatasetRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    analyze_saved_dataset_analyze_dataset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnalyzeDatasetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DatasetDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_dataset_datasets__dataset_id__export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The stored file */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                    "application/octet-stream": unknown;
+                };
+            };
+            /** @description Dataset or stored file is gone */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explore_upload_explore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_explore_upload_explore_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExploreResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explore_dataset_datasets__dataset_id__explore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ExploreRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExploreResponse"];
+                };
+            };
+            /** @description No dataset with that id */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_datasets_compare_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompareRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    compare_with_upload_compare_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_compare_with_upload_compare_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversations_datasets__dataset_id__conversations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_conversation_datasets__dataset_id__conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CreateConversationRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    open_conversation_conversations__conversation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_conversation_conversations__conversation_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_message_conversations__conversation_id__messages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                conversation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_transform_datasets__dataset_id__transform_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransformPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    apply_transform_datasets__dataset_id__transform_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransformApplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ai_status_endpoint_ai_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    ai_test_connection_ai_test_connection_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    ai_suggestions_ai_suggestions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuggestionResponse"][];
+                };
+            };
+        };
+    };
+    insights_inline_ai_insights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_insights_inline_ai_insights_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    insights_from_payload_ai_insights_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InsightsPayloadRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    insights_for_dataset_datasets__dataset_id__insights_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    summary_inline_ai_summary_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_summary_inline_ai_summary_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_inline_ai_ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_ask_inline_ai_ask_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_payload_ai_ask_payload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskPayloadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_dataset_datasets__dataset_id__ask_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    session_status_auth_session_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionResponse"];
+                };
+            };
+        };
+    };
+    register_auth_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description No database is available */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    login_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Credentials did not match */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+        };
+    };
+    me_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Not signed in */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

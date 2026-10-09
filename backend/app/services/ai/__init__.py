@@ -27,7 +27,13 @@ from app.services.ai.provider import (
     require_ai_enabled,
     resolve_provider,
 )
-from app.services.ai.service import ask, dataset_summary, generate_insights, provider_health
+from app.services.ai.service import (
+    ask,
+    dataset_summary,
+    generate_insights,
+    provider_health,
+    suggested_questions,
+)
 
 DESCRIPTIONS = {
     "focus": "The groups carrying the most value, with their share.",

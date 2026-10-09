@@ -209,4 +209,71 @@ class AnalysisResult(Base):
     analysis: Mapped[Analysis] = relationship(back_populates="result")
 
 
+class Conversation(Base):
+    """One thread of questions and answers about a saved dataset.
+
+    Messages live in :class:`ConversationMessage`. The raw analysis payload is
+    never duplicated here: the conversation references the dataset it belongs to,
+    so opening a thread always shows the dataset's current analysis context.
+    """
+
+    __tablename__ = "conversations"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
+    dataset_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("datasets.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    title: Mapped[str] = mapped_column(String(255), default="New conversation")
+    message_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    messages: Mapped[list[ConversationMessage]] = relationship(
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        order_by="ConversationMessage.created_at",
+    )
+    dataset: Mapped[Dataset] = relationship()
+
+    def __repr__(self) -> str:  # pragma: no cover - debug aid
+        return f"<Conversation {self.id} for dataset {self.dataset_id}>"
+
+
+class ConversationMessage(Base):
+    """One user question or assistant answer inside a conversation.
+
+    ``meta`` carries the provenance of the answer (intent, source, model,
+    ``fell_back``) so the UI can render evidence without re-asking. It never
+    stores raw row data or the analysis payload.
+    """
+
+    __tablename__ = "conversation_messages"
+    __table_args__ = (Index("ix_conversation_message_created", "conversation_id", "created_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_new_uuid)
+    conversation_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("conversations.id", ondelete="CASCADE"), index=True
+    )
+    role: Mapped[str] = mapped_column(String(16))  # "user" | "assistant"
+    content: Mapped[str] = mapped_column(Text)
+    meta: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, index=True
+    )
+
+    conversation: Mapped[Conversation] = relationship(back_populates="messages")
+
+    def __repr__(self) -> str:  # pragma: no cover - debug aid
+        return f"<ConversationMessage {self.role} in {self.conversation_id}>"
+
+
 Index("ix_datasets_user_created", Dataset.user_id, Dataset.created_at)
