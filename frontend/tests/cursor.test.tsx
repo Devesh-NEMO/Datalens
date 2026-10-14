@@ -12,6 +12,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 
@@ -152,8 +153,8 @@ describe('Overview — upload state', () => {
     const dropzone = screen.getByRole('button', { name: /upload a data file/i });
     expect(getComputedStyle(dropzone).cursor).toBe('pointer');
 
-    const clean = screen.getByRole('button', { name: /sales_clean\.csv/i });
-    const messy = screen.getByRole('button', { name: /sales_messy\.csv/i });
+    const clean = screen.getByRole('button', { name: /Clean sample/i });
+    const messy = screen.getByRole('button', { name: /Messy sample/i });
     expect(getComputedStyle(clean).cursor).toBe('pointer');
     expect(getComputedStyle(messy).cursor).toBe('pointer');
     expect(clean.tagName).toBe('BUTTON');
@@ -165,7 +166,10 @@ describe('Overview — upload state', () => {
     expect(
       getComputedStyle(screen.getByRole('button', { name: /upload a data file/i })).cursor
     ).toBe('not-allowed');
-    expect(getComputedStyle(screen.getByRole('button', { name: /sales_clean\.csv/i })).cursor).toBe(
+    expect(getComputedStyle(screen.getByRole('button', { name: /Clean sample/i })).cursor).toBe(
+      'not-allowed'
+    );
+    expect(getComputedStyle(screen.getByRole('button', { name: /Messy sample/i })).cursor).toBe(
       'not-allowed'
     );
   });
@@ -189,10 +193,13 @@ describe('Reports — empty state', () => {
 describe('Settings', () => {
   it('shows a pointer-cursor theme toggle that switches the real theme', async () => {
     const user = userEvent.setup();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     render(
-      <ThemeProvider>
-        <SettingsPage />
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <SettingsPage />
+        </ThemeProvider>
+      </QueryClientProvider>
     );
 
     expect(screen.getByText(/You're not signed in/)).toBeTruthy();

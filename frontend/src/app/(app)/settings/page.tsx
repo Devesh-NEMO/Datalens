@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { LogOut, Moon, Sun } from 'lucide-react';
-import { Button, Card } from '@/components/ui';
+import { Button, Card, Spinner } from '@/components/ui';
 import { PageContainer, PageHeader } from '@/components/app';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { initials } from '@/components/shell/AccountMenu';
+import { useAiStatus, useTestAiConnection } from '@/hooks/useAi';
 import { cn } from '@/lib/cn';
 
 /** What the account section shows for an anonymous visitor with auth optional. */
@@ -77,6 +78,7 @@ export default function SettingsPage() {
       />
 
       <div className="mt-8 max-w-2xl space-y-8">
+        <AISection />
         <section aria-labelledby="account-heading">
           <h2 id="account-heading" className="label-xs">
             Account
@@ -137,5 +139,59 @@ export default function SettingsPage() {
         </section>
       </div>
     </PageContainer>
+  );
+}
+function AISection() {
+  const { data: status, isLoading, refetch } = useAiStatus();
+  const test = useTestAiConnection();
+
+  return (
+    <section aria-labelledby="ai-heading">
+      <Card className="p-6">
+        <h2 id="ai-heading" className="text-lg font-semibold">AI</h2>
+        <p className="mt-1 text-sm text-[var(--color-text-muted)]">
+          Read-only status of AI configuration. The API key is set in the backend environment.
+        </p>
+        <dl className="mt-4 grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+          <div>
+            <dt className="text-[var(--color-text-muted)]">Enabled</dt>
+            <dd className="font-medium">{status?.enabled ? 'Yes' : 'No'}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--color-text-muted)]">Configured</dt>
+            <dd className="font-medium">{status?.configured ? 'Yes' : 'No'}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--color-text-muted)]">Provider</dt>
+            <dd className="font-medium">{status?.provider || '-'}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--color-text-muted)]">Model</dt>
+            <dd className="font-medium">{status?.model || '-'}</dd>
+          </div>
+          <div className="md:col-span-2">
+            <dt className="text-[var(--color-text-muted)]">Base URL</dt>
+            <dd className="font-medium break-all">{status?.base_url || '-'}</dd>
+          </div>
+          <div>
+            <dt className="text-[var(--color-text-muted)]">Local fallback enabled</dt>
+            <dd className="font-medium">{status?.local_fallback_enabled ? 'Yes' : 'No'}</dd>
+          </div>
+        </dl>
+        <div className="mt-4 flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>Refresh</Button>
+          <Button variant="primary" size="sm" onClick={() => test.mutate()} disabled={test.isPending || !status?.enabled}>Test connection</Button>
+          {test.isPending ? <Spinner className="h-4 w-4" /> : null}
+        </div>
+        {test.data ? (
+          <div className="mt-3 text-sm text-[var(--color-text-muted)]">
+            {test.data.status}: {test.data.message} {test.data.latency_ms ? `(${test.data.latency_ms}ms)` : ''}
+          </div>
+        ) : test.error ? (
+          <div className="mt-3 text-sm text-red-600">{(test.error as { message?: string })?.message || 'Test failed'}</div>
+        ) : null}
+        <p className="mt-3 text-xs text-[var(--color-text-muted)]">The API key is set in backend/.env and the server must be restarted after changes.</p>
+      </Card>
+    </section>
   );
 }

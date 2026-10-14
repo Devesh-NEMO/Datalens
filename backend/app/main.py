@@ -20,6 +20,7 @@ from app.core.errors import (
     http_exception_handler,
     validation_exception_handler,
 )
+from app.core.rate_limit import ai_rate_limit_middleware
 
 # Configure structured logging
 logging.basicConfig(
@@ -50,6 +51,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# AI rate limiter: a thin HTTP middleware over the shared in-process limiter.
+@app.middleware("http")
+async def ai_rate_limiter_middleware(request: Request, call_next):
+    return await ai_rate_limit_middleware(request, call_next)
 
 @app.middleware("http")
 async def timing_and_logging_middleware(request: Request, call_next: Callable) -> Response:

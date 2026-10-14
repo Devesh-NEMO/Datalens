@@ -9,16 +9,19 @@ import { useDataset } from '@/hooks/useDataset';
 import type { AnalysisResponse } from '@/lib/api';
 import { formatNumber } from '@/lib/format';
 import { AppBackground } from '@/components/app';
+import { AiStatusChip } from '@/components/ai';
 import { Sidebar } from './Sidebar';
 
 const TITLES: Record<string, string> = {
   '/': 'Overview',
+  '/ai': 'AI Insights',
   '/reports': 'Reports',
   '/settings': 'Settings',
 };
 
 function pageTitle(pathname: string): string {
   if (pathname in TITLES) return TITLES[pathname];
+  if (pathname.startsWith('/ai')) return 'AI Insights';
   if (pathname.startsWith('/reports')) return 'Reports';
   if (pathname.startsWith('/settings')) return 'Settings';
   return 'Overview';
@@ -110,6 +113,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="ml-auto flex min-w-0 items-center gap-2">
+          <AiStatusChip />
           {dataset ? (
             <Link
               href="/"

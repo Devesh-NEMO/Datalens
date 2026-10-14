@@ -193,6 +193,27 @@ async def summary_inline(
     return await ai_service.dataset_summary(result.response)
 
 
+
+
+@router.post(
+    "/ai/summary/payload",
+    summary="One-Paragraph Dataset Summary (Payload)",
+    description="A short overview from an analysis payload; avoids re-uploading the file.",
+)
+async def summary_from_payload(
+    body: InsightsPayloadRequest | None = Body(default=None),
+    auth: AuthContext = Depends(require_auth),
+) -> dict[str, Any]:
+    payload = body.analysis if body is not None else None
+    if not payload:
+        raise AppException(
+            message="No analysis was supplied.",
+            code="ai_no_context",
+            hint="Analyse a file first, then pass its analysis payload back here.",
+            status_code=400,
+        )
+    return await ai_service.dataset_summary(payload)
+
 # --- ask ------------------------------------------------------------------------
 
 

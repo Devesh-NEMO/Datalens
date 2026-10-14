@@ -283,11 +283,6 @@ export const DATABASE_HELP = {
 /* Samples and controls                                                       */
 /* -------------------------------------------------------------------------- */
 
-export const SAMPLE_FILES = {
-  clean: { path: '/samples/sales_clean.csv', label: 'sales_clean.csv' },
-  messy: { path: '/samples/sales_messy.csv', label: 'sales_messy.csv' },
-} as const;
-
 export const TOP_N_OPTIONS = [5, 10, 20, 50] as const;
 export const PAGE_SIZES = [10, 25, 50] as const;
 

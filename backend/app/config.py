@@ -169,6 +169,7 @@ class Settings(BaseSettings):
         default=True,
         description="Answer from the deterministic engine when no API key is configured",
     )
+    ai_rate_limit_per_minute: int = Field(default=30, description="AI endpoints rate limit per minute; 0 disables")
 
     @field_validator("allowed_origins", mode="before")
     @classmethod
@@ -228,3 +229,4 @@ def get_settings() -> Settings:
 
 
 settings = get_settings()
+

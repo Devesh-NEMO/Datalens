@@ -484,6 +484,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ai/summary/payload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * One-Paragraph Dataset Summary (Payload)
+         * @description A short overview from an analysis payload; avoids re-uploading the file.
+         */
+        post: operations["summary_from_payload_v1_ai_summary_payload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ai/ask": {
         parameters: {
             query?: never;
@@ -1118,6 +1138,26 @@ export interface paths {
          * @description A short overview for the dashboard header, from the same grounded brief.
          */
         post: operations["summary_inline_ai_summary_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/ai/summary/payload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * One-Paragraph Dataset Summary (Payload)
+         * @description A short overview from an analysis payload; avoids re-uploading the file.
+         */
+        post: operations["summary_from_payload_ai_summary_payload_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5279,6 +5319,41 @@ export interface operations {
             };
         };
     };
+    summary_from_payload_v1_ai_summary_payload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InsightsPayloadRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     ask_inline_v1_ai_ask_post: {
         parameters: {
             query?: never;
@@ -6434,6 +6509,41 @@ export interface operations {
         requestBody: {
             content: {
                 "multipart/form-data": components["schemas"]["Body_summary_inline_ai_summary_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    summary_from_payload_ai_summary_payload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["InsightsPayloadRequest"] | null;
             };
         };
         responses: {

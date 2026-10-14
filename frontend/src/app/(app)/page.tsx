@@ -2,8 +2,12 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { RotateCcw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAnalyze } from "@/hooks/useAnalyze";
 import { useDataset } from "@/hooks/useDataset";
+import { useAiInsights, useAiSummary } from "@/hooks/useAi";
+import { AiInsightCard, ExplainChartDialog } from "@/components/ai";
+import { getAnalysisFingerprint } from "@/lib/analysisFingerprint";
 import { Button, EmptyState, Spinner, ErrorBanner, Chapter } from "@/components/ui";
 import { PageContainer, PageHeader } from "@/components/app";
 import { CHAPTER_IDS, CHAPTER_TITLES, TOP_N_OPTIONS } from "@/lib/constants";
@@ -48,12 +52,45 @@ function Dashboard({
   // when there are no dates, since the chapter they name does not exist.
   const insights = useMemo(() => generateInsights(data), [data]);
 
+  // The written insight is cached per analysis fingerprint, so returning to
+  // Overview reuses the same text instead of re-billing the provider. Only the
+  // explicit Regenerate action recomputes it.
+  const fingerprint = useMemo(
+    () =>
+      getAnalysisFingerprint({
+        fileName,
+        productColumn: data.selection?.product_column,
+        valueColumn: data.selection?.value_column,
+        dateColumn: data.selection?.date_column,
+        analysisTimestamp: `${data.meta?.rows ?? 0}x${data.meta?.columns ?? 0}`,
+      }),
+    [data, fileName]
+  );
+  const summary = useAiSummary(data, fingerprint);
+  const aiInsights = useAiInsights(data, fingerprint);
+  const queryClient = useQueryClient();
+  const regenerateInsight = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["ai", "summary", fingerprint] });
+    queryClient.invalidateQueries({ queryKey: ["ai", "insights", fingerprint] });
+  }, [queryClient, fingerprint]);
+
   return (
     <div className="space-y-12">
       <Hero
         data={data}
         metricSelection={metricSelection}
         onMetricSelectionChange={onMetricSelectionChange}
+      />
+
+      {/* Written from the same analysis as the figures below, with honest
+          provenance. Renders local text by default and model text when one is
+          configured; never invents a number. */}
+      <AiInsightCard
+        summary={summary.data}
+        insights={aiInsights.data}
+        loading={summary.isPending || aiInsights.isPending}
+        error={summary.error ?? aiInsights.error}
+        onRegenerate={regenerateInsight}
       />
 
       {/* Sits between the summary and chapter 1: the reader gets the findings
@@ -65,10 +102,24 @@ function Dashboard({
 
       <Chapter number={3} id={CHAPTER_IDS.shape} title={CHAPTER_TITLES[CHAPTER_IDS.shape]}>
         <ParetoChart data={data} sourceFileName={fileName} />
+        <ChartExplainRow>
+          <ExplainChartDialog
+            title="Concentration (Pareto)"
+            question="How is the total value distributed?"
+            data={data}
+          />
+        </ChartExplainRow>
       </Chapter>
 
       <Chapter number={4} id={CHAPTER_IDS.leaders} title={CHAPTER_TITLES[CHAPTER_IDS.leaders]}>
         <TopProductsChart data={data} sourceFileName={fileName} />
+        <ChartExplainRow>
+          <ExplainChartDialog
+            title="Top products"
+            question="Which products should I focus on?"
+            data={data}
+          />
+        </ChartExplainRow>
         <h3 className="mt-8 mb-2 text-xs uppercase tracking-widest text-[var(--color-muted-text)]">
           Most important
         </h3>
@@ -80,6 +131,13 @@ function Dashboard({
           <AbcPieChart data={data} sourceFileName={fileName} />
           <AbcBarChart data={data} sourceFileName={fileName} />
         </div>
+        <ChartExplainRow>
+          <ExplainChartDialog
+            title="ABC classification"
+            question="How many groups are in each ABC class?"
+            data={data}
+          />
+        </ChartExplainRow>
       </Chapter>
 
       <Chapter number={6} id={CHAPTER_IDS.tail} title={CHAPTER_TITLES[CHAPTER_IDS.tail]}>
@@ -96,6 +154,13 @@ function Dashboard({
       {hasTrend && (
         <Chapter number={7} id={CHAPTER_IDS.time} title={CHAPTER_TITLES[CHAPTER_IDS.time]}>
           <TrendChart data={data} sourceFileName={fileName} />
+          <ChartExplainRow>
+            <ExplainChartDialog
+              title="Trend over time"
+              question="What changed in the most recent period?"
+              data={data}
+            />
+          </ChartExplainRow>
         </Chapter>
       )}
 
@@ -108,6 +173,11 @@ function Dashboard({
       </div>
     </div>
   );
+}
+
+/** Right-aligned slot for the per-chart "Explain this chart" action. */
+function ChartExplainRow({ children }: { children: React.ReactNode }) {
+  return <div className="mt-3 flex justify-end">{children}</div>;
 }
 
 function AppContent() {
@@ -149,19 +219,12 @@ function AppContent() {
   );
 
   const handleSampleSelect = useCallback(
-    async (type: "clean" | "messy") => {
-      try {
-        const res = await fetch(`/samples/sales_${type}.csv`);
-        const blob = await res.blob();
-        const f = new File([blob], `sales_${type}.csv`, { type: "text/csv" });
-        setFile(f);
-        setMetricSelection([...DEFAULT_METRIC_IDS]);
-        analyze(f);
-      } catch {
-        // Handle error
-      }
+    async () => {
+      // Sample datasets have been removed; fall back to file upload
+      setFile(null);
+      setMetricSelection([...DEFAULT_METRIC_IDS]);
     },
-    [analyze]
+    []
   );
 
   const handleReset = useCallback(() => {

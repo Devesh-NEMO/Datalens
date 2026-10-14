@@ -1,4 +1,17 @@
 import type { components } from '@/types/api';
+import type {
+  AiHealth,
+  AiStatus,
+  AskHistoryMessage,
+  AskResponse,
+  ConversationDetail,
+  ConversationList,
+  ConversationSummary,
+  DatasetSummary,
+  InsightsResponse,
+  PostMessageResult,
+  SuggestionResponse,
+} from '@/lib/aiTypes';
 
 export type AnalysisResponse = components['schemas']['AnalysisResponse'];
 export type MetaResponse = components['schemas']['MetaResponse'];
@@ -186,6 +199,151 @@ export async function checkHealth(): Promise<{ status: string; version: string }
   const res = await apiFetch('/health');
   if (!res.ok) {
     throw { ...NETWORK_ERROR, code: 'health_failed', message: 'Health check failed' };
+  }
+  return res.json();
+}
+
+export async function aiStatus(signal?: AbortSignal): Promise<AiStatus> {
+  const res = await apiFetch('/v1/ai/status', { signal });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function aiSuggestions(signal?: AbortSignal): Promise<SuggestionResponse[]> {
+  const res = await apiFetch('/v1/ai/suggestions', { signal });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function aiInsightsFromPayload(
+  payload: AnalysisResponse,
+  signal?: AbortSignal
+): Promise<InsightsResponse> {
+  const res = await apiFetch('/v1/ai/insights/upload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ analysis: payload }),
+    signal,
+  });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function aiSummaryFromPayload(
+  payload: AnalysisResponse,
+  signal?: AbortSignal
+): Promise<DatasetSummary> {
+  const res = await apiFetch('/v1/ai/summary/payload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ analysis: payload }),
+    signal,
+  });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function aiAskPayload(
+  payload: AnalysisResponse,
+  question: string,
+  history: AskHistoryMessage[] = [],
+  signal?: AbortSignal
+): Promise<AskResponse> {
+  const res = await apiFetch('/v1/ai/ask/payload', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ analysis: payload, question, history }),
+    signal,
+  });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function aiTestConnection(signal?: AbortSignal): Promise<AiHealth> {
+  const res = await apiFetch('/v1/ai/test-connection', { signal });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+// Conversations
+export async function listConversations(
+  datasetId: string,
+  signal?: AbortSignal
+): Promise<ConversationList> {
+  const res = await apiFetch(`/v1/datasets/${datasetId}/conversations`, { signal });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function createConversation(
+  datasetId: string,
+  title?: string,
+  signal?: AbortSignal
+): Promise<ConversationSummary> {
+  const res = await apiFetch(`/v1/datasets/${datasetId}/conversations`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title }),
+    signal,
+  });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function getConversation(
+  conversationId: string,
+  signal?: AbortSignal
+): Promise<ConversationDetail> {
+  const res = await apiFetch(`/v1/conversations/${conversationId}`, { signal });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function deleteConversation(
+  conversationId: string,
+  signal?: AbortSignal
+): Promise<{ id: string; deleted: boolean }> {
+  const res = await apiFetch(`/v1/conversations/${conversationId}`, {
+    method: 'DELETE',
+    signal,
+  });
+  if (!res.ok) {
+    await throwParsedError(res);
+  }
+  return res.json();
+}
+
+export async function postMessage(
+  conversationId: string,
+  question: string,
+  signal?: AbortSignal
+): Promise<PostMessageResult> {
+  const res = await apiFetch(`/v1/conversations/${conversationId}/messages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question }),
+    signal,
+  });
+  if (!res.ok) {
+    await throwParsedError(res);
   }
   return res.json();
 }

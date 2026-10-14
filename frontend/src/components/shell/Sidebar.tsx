@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, FileText, LayoutDashboard, Plus, Settings } from 'lucide-react';
+import { BarChart3, FileText, LayoutDashboard, Plus, Settings, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { AccountMenu } from './AccountMenu';
 
@@ -13,6 +13,7 @@ import { AccountMenu } from './AccountMenu';
  */
 const NAV_ITEMS = [
   { href: '/', label: 'Overview', icon: LayoutDashboard },
+  { href: '/ai', label: 'AI Insights', icon: Sparkles },
   { href: '/reports', label: 'Reports', icon: FileText },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];

@@ -33,6 +33,11 @@ export interface ReportSettings {
   includeLists: boolean;
   /** Include ranking table. */
   includeRankingTable: boolean;
+  /**
+   * Include the written Executive summary, when one was supplied. Optional so
+   * existing settings literals keep working; treated as false when absent.
+   */
+  includeAiSummary?: boolean;
   /** If true, ranking table uses all rows (unfiltered, unsorted). */
   tableScopeAll: boolean;
   /** Top N used for analysis. */
@@ -56,6 +61,29 @@ export interface TextSection {
   kind: 'text';
   heading: string;
   body: string[];
+}
+
+/**
+ * The written Executive summary, carried with its provenance so the PDF states
+ * whether a model wrote it or the deterministic engine did, and never claims
+ * more than the analysis supports.
+ */
+export interface AiSummaryInput {
+  text: string;
+  is_ai: boolean;
+  provider?: string;
+  model?: string;
+  fell_back?: boolean;
+  disclaimer?: string;
+}
+
+export interface AiSummarySection {
+  kind: 'aiSummary';
+  heading: string;
+  body: string[];
+  /** Short label printed under the text, e.g. "AI-written · gpt-4o-mini". */
+  provenance: string;
+  disclaimer?: string;
 }
 
 export interface StatItem {
@@ -148,6 +176,7 @@ export interface RankingTableSection {
 
 export type ReportSection =
   | CoverSection
+  | AiSummarySection
   | TextSection
   | StatsSection
   | QualitySection
@@ -163,6 +192,8 @@ export interface ReportSectionsOptions {
   data: AnalysisResponse;
   /** Report settings chosen by the user. */
   settings: ReportSettings;
+  /** Optional written executive summary, with its provenance. */
+  aiSummary?: AiSummaryInput | null;
   /** Current filtered/sorted rows for table scope. */
   currentRankingRows?: ProductRankItemResponse[];
   /** If true, use currentRankingRows when tableScopeAll is false. */
@@ -199,6 +230,7 @@ export function buildReportSections({
   sourceFileName,
   data,
   settings,
+  aiSummary,
   currentRankingRows,
   hasCurrentRankingRows = false,
 }: ReportSectionsOptions): ReportSection[] {
@@ -215,6 +247,23 @@ export function buildReportSections({
     generatedAt,
     settings,
   });
+
+  // Written executive summary, when one was supplied and requested. Placed
+  // before the computed Pareto insight so the reader gets the overview first —
+  // and labelled with its source, so the document never overstates what wrote it.
+  if (settings.includeAiSummary && aiSummary?.text) {
+    sections.push({
+      kind: 'aiSummary',
+      heading: 'Executive summary',
+      body: [aiSummary.text],
+      provenance: aiSummary.fell_back
+        ? 'Datalens local analysis (model unavailable)'
+        : aiSummary.is_ai
+          ? `AI-written${aiSummary.model ? ` · ${aiSummary.model}` : ''}`
+          : 'Datalens local analysis',
+      disclaimer: aiSummary.disclaimer || undefined,
+    });
+  }
 
   // Pareto insight + 4 summary stats
   if (settings.includeSummary) {

@@ -20,6 +20,7 @@ import {
   formatReportDateTime,
   type ReportSettings,
   type ChartMeta,
+  type AiSummaryInput,
 } from '@/lib/report/reportSections';
 import {
   A4_HEIGHT,
@@ -59,6 +60,11 @@ export interface BuildReportOptions {
   sourceFileName: string;
   data: AnalysisResponse;
   settings: ReportSettings;
+  /**
+   * The written executive summary and its provenance, when one has been
+   * generated. Included only when `settings.includeAiSummary` is true.
+   */
+  aiSummary?: AiSummaryInput | null;
   /**
    * The rows currently visible in the ranking table, after filtering and
    * sorting. Used when the user picks "current filtered/sorted rows" for the
@@ -366,6 +372,26 @@ export async function buildReport({
         let y = heading(doc, cursor, font, section.heading);
         for (const paragraph of section.body) {
           y = drawParagraph(doc, font, paragraph, y);
+        }
+        cursor.y = y + 10;
+        break;
+      }
+
+      case 'aiSummary': {
+        let y = heading(doc, cursor, font, section.heading);
+        for (const paragraph of section.body) {
+          y = drawParagraph(doc, font, paragraph, y);
+        }
+        // Provenance label under the text
+        y += 5;
+        doc.setFont(font, 'normal');
+        doc.setFontSize(PDF_TYPE.caption);
+        doc.setTextColor(...PDF_COLORS.mutedText);
+        doc.text(`(${section.provenance})`, PAGE_MARGIN, y);
+        if (section.disclaimer) {
+          y += PDF_TYPE.caption * 1.3;
+          doc.setFontSize(PDF_TYPE.caption);
+          doc.text(section.disclaimer, PAGE_MARGIN, y);
         }
         cursor.y = y + 10;
         break;
