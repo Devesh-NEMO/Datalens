@@ -156,7 +156,7 @@ class Settings(BaseSettings):
     ai_enabled: bool = Field(default=True, description="Master switch for AI features")
     ai_api_key: str | None = Field(default=None, description="API key for the AI provider")
     ai_base_url: str = Field(
-        default="https://api.openai.com/v1",
+        default="http://localhost:20128/v1",
         description="Base URL for any OpenAI-compatible chat completions endpoint",
     )
     ai_model: str = Field(default="gpt-4o-mini", description="Chat completion model name")

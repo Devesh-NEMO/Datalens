@@ -422,3 +422,38 @@ npm run lint        # ESLint
 npm run typecheck   # TypeScript strict check
 npm run build       # Production build
 ```
+
+## Dataset Storage Cleanup
+
+The `backend/var/storage/` directory stores uploaded CSV datasets and their analysis metadata. Over time, this directory can accumulate files.
+
+### Cleanup Script
+
+A Python script is provided to remove all files from `var/storage/`:
+
+```bash
+# Preview what would be removed (recommended first step)
+python cleanup_storage.py --dry-run
+
+# Actually delete everything
+python cleanup_storage.py --force
+
+# Interactive mode (press 'y' to confirm)
+python cleanup_storage.py
+```
+
+**Script location:** `backend/cleanup_storage.py`
+
+**What it removes:**
+- All `*.csv` dataset files
+- All `*.meta.json` analysis metadata files
+- Recreates an empty `var/storage/` directory
+
+**Usage notes:**
+- Run from the `backend/` directory
+- The `--dry-run` flag shows exactly which files will be deleted without removing them
+- The `--force` flag skips the confirmation prompt
+- New datasets uploaded through the app will create fresh entries in `var/storage/`
+
+---
+README.md
