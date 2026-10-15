@@ -24,12 +24,11 @@ function displayName(user: AuthContextValue['user']): string {
 /**
  * The account affordance in the sidebar footer: a visible avatar with the
  * user's initials, name and a chevron, opening a small menu (Settings, Sign
- * out) when signed in. A single "Sign in" button replaces it when auth is
- * optional and nobody is signed in. Renders nothing while auth is required —
- * the AuthGate is already sending that visitor to /login.
+ * out) when signed in. Renders nothing for an anonymous visitor — the AuthGate
+ * owns getting them to /login, so the sidebar shows no sign-in affordance.
  */
 export function AccountMenu() {
-  const { user, status, authRequired, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -52,17 +51,6 @@ export function AccountMenu() {
       document.removeEventListener('pointerdown', onPointerDown);
     };
   }, [open]);
-
-  if (status === 'anonymous' && !authRequired) {
-    return (
-      <Link
-        href="/login"
-        className="app-btn-secondary-link w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-      >
-        Sign in
-      </Link>
-    );
-  }
 
   if (!user) return null;
 
